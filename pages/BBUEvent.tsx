@@ -103,36 +103,21 @@ export const BBUEvent: React.FC = () => {
         </div>
       </div>
 
-      {/* Event Explanation Section */}
+      {/* Course Description Section */}
       <section className="px-6 md:px-12 lg:px-24 py-16 md:py-24">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-4xl"
+          className="max-w-4xl mx-auto text-center"
         >
-          <p className="text-2xl md:text-3xl text-syncra-lime/90 mb-12 leading-relaxed">
-            The Challenge is an ultra-endurance "Last Man Standing" event that tests athletes' limits through continuous hourly laps.
+          <h2 className="text-4xl md:text-5xl font-mono uppercase mb-8">
+            A Fast & Exciting Woodland Loop
+          </h2>
+          <p className="text-xl md:text-2xl text-syncra-lime/80 leading-relaxed">
+            A flat, fast 4.2-mile (6.7km) loop through Boughton Estate. The course runs through woodland and across a former WWII airfield, following historic runways within a working rural landscape. Designed for speed, with light natural obstacles and minimal elevation change to maintain rhythm and efficiency. The mix of forestry trail and open terrain provides consistent pacing while requiring focus throughout each lap.
           </p>
-
-          <div className="border-l-2 border-syncra-lime/30 pl-6 md:pl-8">
-            <h2 className="text-3xl md:text-4xl font-mono uppercase mb-6">The Format</h2>
-            <ul className="space-y-4 text-xl text-syncra-lime/80">
-              <li className="flex items-start gap-3">
-                <span className="text-syncra-lime font-bold">Distance:</span>
-                <span>6.7km per lap on mixed semi-trail and concrete terrain</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-syncra-lime font-bold">Timing:</span>
-                <span>Every hour, on the hour - no exceptions</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-syncra-lime font-bold">Victory:</span>
-                <span>Last athlete wins it ALL</span>
-              </li>
-            </ul>
-          </div>
         </motion.div>
       </section>
 
@@ -143,7 +128,7 @@ export const BBUEvent: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-4xl md:text-5xl font-mono uppercase mb-12 text-center"
+          className="text-5xl md:text-6xl font-mono uppercase mb-12 text-center"
         >
           Four Categories
         </motion.h2>
@@ -160,9 +145,9 @@ export const BBUEvent: React.FC = () => {
             >
               <div className="flex items-center gap-4 mb-4">
                 <category.icon size={32} className="text-syncra-lime" />
-                <h3 className="text-2xl md:text-3xl font-mono uppercase">{category.title}</h3>
+                <h3 className="text-3xl md:text-4xl font-mono uppercase">{category.title}</h3>
               </div>
-              <p className="text-lg text-syncra-lime/70 leading-relaxed">{category.description}</p>
+              <p className="text-xl text-syncra-lime/70 leading-relaxed">{category.description}</p>
             </motion.div>
           ))}
         </div>
