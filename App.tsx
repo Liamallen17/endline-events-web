@@ -10,6 +10,8 @@ import { EventGallery } from './components/EventGallery';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 import { BBUEvent } from './pages/BBUEvent';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { CookiePolicy } from './pages/CookiePolicy';
 
 // Homepage component with all sections
 const HomePage: React.FC = () => {
@@ -36,6 +38,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/events/bbu" element={<BBUEvent />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/cookies" element={<CookiePolicy />} />
       </Routes>
     </BrowserRouter>
   );
