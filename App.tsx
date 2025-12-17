@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { BrandingBar } from './components/BrandingBar';
@@ -8,8 +9,10 @@ import { ServicesIndex } from './components/ServicesIndex';
 import { EventGallery } from './components/EventGallery';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
+import { BBUEvent } from './pages/BBUEvent';
 
-export default function App() {
+// Homepage component with all sections
+const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-syncra-black text-syncra-lime selection:bg-syncra-lime selection:text-syncra-black">
       <Navbar />
@@ -24,5 +27,16 @@ export default function App() {
       </main>
       <Footer />
     </div>
+  );
+};
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/events/bbu" element={<BBUEvent />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

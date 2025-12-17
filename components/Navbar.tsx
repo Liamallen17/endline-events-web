@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 
-type EventType = 'BBU' | 'Tracksix' | null;
-
 export const Navbar: React.FC = () => {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
-  const [activeModal, setActiveModal] = useState<EventType>(null);
+  const [showTracksixModal, setShowTracksixModal] = useState(false);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -17,14 +17,20 @@ export const Navbar: React.FC = () => {
     }
   };
 
-  const openModal = (event: EventType) => {
-    setActiveModal(event);
+  const navigateToBBU = () => {
+    setDropdownOpen(false);
+    setMobileMenuOpen(false);
+    navigate('/events/bbu');
+  };
+
+  const openTracksixModal = () => {
+    setShowTracksixModal(true);
     setDropdownOpen(false);
     setMobileMenuOpen(false);
   };
 
-  const closeModal = () => {
-    setActiveModal(null);
+  const closeTracksixModal = () => {
+    setShowTracksixModal(false);
   };
 
   return (
@@ -57,13 +63,13 @@ export const Navbar: React.FC = () => {
               {dropdownOpen && (
                 <div className="absolute top-full left-0 bg-syncra-black/95 backdrop-blur-sm border border-syncra-lime/20 rounded-lg overflow-hidden min-w-[160px]">
                   <button
-                    onClick={() => openModal('BBU')}
+                    onClick={navigateToBBU}
                     className="w-full text-left px-6 py-3 text-sm tracking-wide hover:bg-syncra-lime/10 transition-colors"
                   >
                     BBU
                   </button>
                   <button
-                    onClick={() => openModal('Tracksix')}
+                    onClick={openTracksixModal}
                     className="w-full text-left px-6 py-3 text-sm tracking-wide hover:bg-syncra-lime/10 transition-colors border-t border-syncra-lime/10"
                   >
                     Tracksix
@@ -110,13 +116,13 @@ export const Navbar: React.FC = () => {
               {mobileDropdownOpen && (
                 <div className="pl-4 mt-4 space-y-4">
                   <button
-                    onClick={() => openModal('BBU')}
+                    onClick={navigateToBBU}
                     className="block text-lg font-mono uppercase text-syncra-lime/80 hover:text-syncra-lime"
                   >
                     BBU
                   </button>
                   <button
-                    onClick={() => openModal('Tracksix')}
+                    onClick={openTracksixModal}
                     className="block text-lg font-mono uppercase text-syncra-lime/80 hover:text-syncra-lime"
                   >
                     Tracksix
@@ -141,20 +147,20 @@ export const Navbar: React.FC = () => {
         )}
       </nav>
 
-      {/* Event Modal */}
-      {activeModal && (
+      {/* Tracksix Modal */}
+      {showTracksixModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            onClick={closeModal}
+            onClick={closeTracksixModal}
           />
           
           {/* Modal Content */}
           <div className="relative bg-syncra-black border-2 border-syncra-lime/30 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
             <button
-              onClick={closeModal}
+              onClick={closeTracksixModal}
               className="absolute top-4 right-4 md:top-6 md:right-6 text-syncra-lime hover:opacity-70 transition-opacity"
             >
               <X size={32} />
@@ -162,37 +168,18 @@ export const Navbar: React.FC = () => {
 
             {/* Modal Body */}
             <div className="p-8 md:p-12">
-              {activeModal === 'BBU' ? (
-                <>
-                  <h2 className="text-3xl md:text-5xl font-mono uppercase text-syncra-lime mb-6">
-                    Boughton Backyard Ultra
-                  </h2>
-                  <div className="space-y-6 text-syncra-lime/90">
-                    <p className="text-lg">
-                      Event details coming soon...
-                    </p>
-                    <div className="border-t border-syncra-lime/20 pt-6">
-                      <h3 className="text-xl font-mono uppercase mb-4">Event Information</h3>
-                      <p>Add your event details here: date, location, registration info, etc.</p>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-3xl md:text-5xl font-mono uppercase text-syncra-lime mb-6">
-                    Tracksix
-                  </h2>
-                  <div className="space-y-6 text-syncra-lime/90">
-                    <p className="text-lg">
-                      Event details coming soon...
-                    </p>
-                    <div className="border-t border-syncra-lime/20 pt-6">
-                      <h3 className="text-xl font-mono uppercase mb-4">Event Information</h3>
-                      <p>Add your event details here: date, location, registration info, etc.</p>
-                    </div>
-                  </div>
-                </>
-              )}
+              <h2 className="text-3xl md:text-5xl font-mono uppercase text-syncra-lime mb-6">
+                Tracksix
+              </h2>
+              <div className="space-y-6 text-syncra-lime/90">
+                <p className="text-lg">
+                  Event details coming soon...
+                </p>
+                <div className="border-t border-syncra-lime/20 pt-6">
+                  <h3 className="text-xl font-mono uppercase mb-4">Event Information</h3>
+                  <p>Add your event details here: date, location, registration info, etc.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
