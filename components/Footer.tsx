@@ -9,15 +9,15 @@ export const Footer: React.FC = () => {
         <div className="flex gap-4 items-start">
           <div className="w-3 h-3 bg-syncra-lime mt-1 shrink-0" />
           <p className="leading-relaxed opacity-80">
-            Our mission is to make every event unforgettable with amazing music and entertainment. Our passion for music drives us to deliver experiences worth remembering.
+            WE BUILD STAGES FOR ORDINARY PEOPLE TO DO EXTRAORDINARY THINGS. OUR RACES BREAK COMFORT, BUILD COURAGE, AND CELEBRATE THE RELENTLESS PURSUIT OF PROGRESS.
           </p>
         </div>
 
         {/* Col 2 - Contact */}
         <div className="space-y-4">
           <h4 className="font-bold mb-4">Contact</h4>
-          <p className="opacity-80">123 Demo Street<br/>New York, NY 12345</p>
-          <p className="opacity-80">(555) 555-5555</p>
+          <p className="opacity-80">ENDLINEEVENTS@GMAIL.COM</p>
+
         </div>
 
         {/* Col 3 - Explore */}

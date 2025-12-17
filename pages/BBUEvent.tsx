@@ -107,9 +107,8 @@ export const BBUEvent: React.FC = () => {
       <section className="px-6 md:px-12 lg:px-24 py-16 md:py-24">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
           className="max-w-4xl mx-auto text-center"
         >
           <h2 className="text-4xl md:text-5xl font-mono uppercase mb-8">
@@ -125,9 +124,8 @@ export const BBUEvent: React.FC = () => {
       <section className="px-6 md:px-12 lg:px-24 py-16 md:py-24 bg-syncra-black">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
           className="text-5xl md:text-6xl font-mono uppercase mb-12 text-center"
         >
           Four Categories
@@ -138,9 +136,8 @@ export const BBUEvent: React.FC = () => {
             <motion.div
               key={category.title}
               initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
               className="border border-syncra-lime/20 rounded-xl p-6 md:p-8 hover:border-syncra-lime/40 transition-colors"
             >
               <div className="flex items-center gap-4 mb-4">
