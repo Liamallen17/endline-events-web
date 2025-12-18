@@ -5,17 +5,17 @@ export const Footer: React.FC = () => {
   return (
     <footer className="py-20 border-t border-syncra-lime/20 text-sm md:text-xs tracking-wide uppercase font-mono">
       <div className="container">
-        <div className="flex flex-col lg:flex-row lg:justify-between gap-12">
+        <div className="flex flex-col lg:flex-row lg:justify-between gap-6 md:gap-8 lg:gap-12">
           {/* Mission - left side */}
-          <div className="flex gap-4 items-start max-w-xs">
-            <div className="w-3 h-3 bg-syncra-lime mt-1 shrink-0" />
+          <div className="flex gap-4 items-start max-w-xs mx-auto lg:mx-0 text-center lg:text-left">
+            <div className="w-3 h-3 bg-syncra-lime mt-1 shrink-0 hidden lg:block" />
             <p className="leading-relaxed opacity-80">
               WE BUILD STAGES FOR ORDINARY PEOPLE TO DO EXTRAORDINARY THINGS. OUR RACES BREAK COMFORT, BUILD COURAGE, AND CELEBRATE THE RELENTLESS PURSUIT OF PROGRESS.
             </p>
           </div>
 
           {/* Right side - Contact, Follow, Legal grouped */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 lg:gap-8">
             {/* Contact */}
             <div className="text-center">
               <h4 className="font-bold mb-4">Contact</h4>

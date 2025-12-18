@@ -101,51 +101,55 @@ export const Navbar: React.FC = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 top-20 bg-syncra-black z-40 p-6 flex flex-col gap-6">
-            {/* Our Events with submenu */}
-            <div>
-              <button
-                onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
-                className="text-xl font-mono uppercase border-b border-syncra-lime/20 pb-4 w-full text-left flex items-center justify-between"
-              >
-                Our Events
-                <ChevronDown size={20} className={`transition-transform ${mobileDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {mobileDropdownOpen && (
-                <div className="pl-4 mt-4 space-y-4">
-                  <button
-                    onClick={navigateToBBU}
-                    className="block text-lg font-mono uppercase text-syncra-lime/80 hover:text-syncra-lime"
-                  >
-                    BBU
-                  </button>
-                  <button
-                    onClick={openTracksixModal}
-                    className="block text-lg font-mono uppercase text-syncra-lime/80 hover:text-syncra-lime"
-                  >
-                    Tracksix
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            <button 
-              onClick={() => scrollToSection('gallery')} 
-              className="text-xl font-mono uppercase border-b border-syncra-lime/20 pb-4 text-left"
-            >
-              Gallery
-            </button>
-            <button 
-              onClick={() => scrollToSection('contact')} 
-              className="text-xl font-mono uppercase border-b border-syncra-lime/20 pb-4 text-left"
-            >
-              Contact
-            </button>
-          </div>
-        )}
       </nav>
+
+      {/* Mobile Menu - Outside nav for proper layering */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed left-0 right-0 bottom-0 z-[100] p-6 flex flex-col gap-6 md:hidden"
+          style={{ top: '72px', backgroundColor: '#0a0a0a' }}
+        >
+          {/* Our Events with submenu */}
+          <div>
+            <button
+              onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
+              className="text-xl font-mono uppercase border-b border-syncra-lime/20 pb-4 w-full text-left flex items-center justify-between text-syncra-lime"
+            >
+              Our Events
+              <ChevronDown size={20} className={`transition-transform ${mobileDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {mobileDropdownOpen && (
+              <div className="pl-4 mt-4 space-y-4">
+                <button
+                  onClick={navigateToBBU}
+                  className="block text-lg font-mono uppercase text-syncra-lime/80 hover:text-syncra-lime"
+                >
+                  BBU
+                </button>
+                <button
+                  onClick={openTracksixModal}
+                  className="block text-lg font-mono uppercase text-syncra-lime/80 hover:text-syncra-lime"
+                >
+                  Tracksix
+                </button>
+              </div>
+            )}
+          </div>
+          
+          <button 
+            onClick={() => scrollToSection('gallery')} 
+            className="text-xl font-mono uppercase border-b border-syncra-lime/20 pb-4 text-left text-syncra-lime"
+          >
+            Gallery
+          </button>
+          <button 
+            onClick={() => scrollToSection('contact')} 
+            className="text-xl font-mono uppercase border-b border-syncra-lime/20 pb-4 text-left text-syncra-lime"
+          >
+            Contact
+          </button>
+        </div>
+      )}
 
       {/* Tracksix Modal */}
       {showTracksixModal && (
