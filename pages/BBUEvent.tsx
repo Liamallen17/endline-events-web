@@ -54,7 +54,7 @@ export const BBUEvent: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-syncra-black/40 via-transparent to-syncra-black" />
 
         {/* Hero Content */}
-        <div className="relative h-full flex flex-col justify-center items-center text-center px-6 md:px-12 lg:px-24">
+        <div className="container relative h-full flex flex-col justify-center items-center text-center">
           {/* Main Title */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -104,34 +104,37 @@ export const BBUEvent: React.FC = () => {
       </div>
 
       {/* Course Description Section */}
-      <section className="px-6 md:px-12 lg:px-24 py-16 md:py-24">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="max-w-4xl mx-auto text-center"
-        >
+      <section className="py-16 md:py-24">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="max-w-4xl mx-auto text-center"
+          >
           <h2 className="text-4xl md:text-5xl font-mono uppercase mb-8">
             A Fast & Exciting Woodland Loop
           </h2>
           <p className="text-xl md:text-2xl text-syncra-lime/80 leading-relaxed">
             A flat, fast 4.2-mile (6.7km) loop through Boughton Estate. The course runs through woodland and across a former WWII airfield, following historic runways within a working rural landscape. Designed for speed, with light natural obstacles and minimal elevation change to maintain rhythm and efficiency. The mix of forestry trail and open terrain provides consistent pacing while requiring focus throughout each lap.
           </p>
-        </motion.div>
+          </motion.div>
+        </div>
       </section>
 
       {/* Four Categories Section */}
-      <section className="px-6 md:px-12 lg:px-24 py-16 md:py-24 bg-syncra-black">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-5xl md:text-6xl font-mono uppercase mb-12 text-center"
-        >
-          Four Categories
-        </motion.h2>
+      <section className="py-16 md:py-24 bg-syncra-black">
+        <div className="container">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-5xl md:text-6xl font-mono uppercase mb-12 text-center"
+          >
+            Four Categories
+          </motion.h2>
 
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
           {categories.map((category, index) => (
             <motion.div
               key={category.title}
@@ -147,12 +150,13 @@ export const BBUEvent: React.FC = () => {
               <p className="text-xl text-syncra-lime/70 leading-relaxed">{category.description}</p>
             </motion.div>
           ))}
+          </div>
         </div>
       </section>
 
       {/* Footer Info Section */}
-      <section className="px-6 md:px-12 lg:px-24 py-16 md:py-20 border-t border-syncra-lime/20">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-16 md:py-20 border-t border-syncra-lime/20">
+        <div className="container">
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12">
             <button

@@ -35,8 +35,8 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 md:px-12 md:py-8 bg-syncra-black/90 backdrop-blur-sm">
-        <div className="flex items-start justify-between w-full">
+      <nav className="fixed top-0 left-0 right-0 z-50 py-6 md:py-8 bg-syncra-black/90 backdrop-blur-sm">
+        <div className="container flex items-start justify-between">
           {/* Logo Text - Links back to top */}
           <a 
             href="#" 

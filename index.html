@@ -74,6 +74,19 @@
       .coin-spin:hover {
         animation: coinSpin 0.6s ease-in-out;
       }
+
+      /* Container system - mobile-first */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.25rem; /* 20px - mobile base */
+      }
+
+      @media (min-width: 768px) {
+        .container {
+          padding: 0 3rem; /* 48px - tablet/desktop */
+        }
+      }
     </style>
   <script type="importmap">
 {

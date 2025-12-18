@@ -15,8 +15,8 @@ export const PrivacyPolicy: React.FC = () => {
       </Link>
 
       {/* Content */}
-      <div className="px-6 md:px-12 lg:px-24 py-24 md:py-32">
-        <div className="max-w-4xl mx-auto">
+      <div className="py-24 md:py-32">
+        <div className="container">
           {/* Header */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-mono uppercase mb-4">
             Privacy Policy & GDPR

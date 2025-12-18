@@ -2,8 +2,9 @@ import React from 'react';
 
 export const ServicesIndex: React.FC = () => {
   return (
-    <section className="py-24 px-6 md:px-12 border-t border-syncra-lime/20 relative bg-syncra-black">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 relative">
+    <section className="py-24 border-t border-syncra-lime/20 relative bg-syncra-black">
+      <div className="container">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 relative">
         
         {/* Vertical divider - only visible on md+ screens */}
         <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-syncra-lime/20 -translate-x-1/2" />
@@ -57,7 +58,7 @@ export const ServicesIndex: React.FC = () => {
             </span>
           </a>
         </div>
-
+        </div>
       </div>
     </section>
   );
