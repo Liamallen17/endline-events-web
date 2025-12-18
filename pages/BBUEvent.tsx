@@ -91,13 +91,13 @@ export const BBUEvent: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="flex flex-col md:flex-row gap-2 sm:gap-3 md:gap-4 justify-center"
           >
-            <div className="bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-6 py-2 text-center">
+            <div className="bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-6 py-2 flex flex-col sm:flex-row sm:flex-wrap sm:justify-center sm:items-center gap-1">
               <span className="text-xl sm:text-2xl md:text-4xl font-bold text-white">Distance</span>
-              <span className="text-base sm:text-xl md:text-2xl text-syncra-lime/90 ml-2 sm:ml-3">4.2 mile loop</span>
+              <span className="text-base sm:text-xl md:text-2xl text-syncra-lime/90">4.2 mile loop</span>
             </div>
-            <div className="bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-6 py-2 text-center">
+            <div className="bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-6 py-2 flex flex-col sm:flex-row sm:flex-wrap sm:justify-center sm:items-center gap-1">
               <span className="text-xl sm:text-2xl md:text-4xl font-bold text-white">Terrain</span>
-              <span className="text-base sm:text-xl md:text-2xl text-syncra-lime/90 ml-2 sm:ml-3">Flat trail with natural obstacles</span>
+              <span className="text-base sm:text-xl md:text-2xl text-syncra-lime/90">Flat trail with natural obstacles</span>
             </div>
           </motion.div>
         </div>
@@ -136,19 +136,26 @@ export const BBUEvent: React.FC = () => {
 
           <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
           {categories.map((category, index) => (
-            <motion.div
+            <a
               key={category.title}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-              className="border border-syncra-lime/20 rounded-xl p-6 md:p-8 hover:border-syncra-lime/40 transition-colors"
+              href="https://boughtonbackyardultra.co.uk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <category.icon size={32} className="text-syncra-lime" />
-                <h3 className="text-3xl md:text-4xl font-mono uppercase">{category.title}</h3>
-              </div>
-              <p className="text-xl text-syncra-lime/70 leading-relaxed">{category.description}</p>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
+                className="border border-syncra-lime/20 rounded-xl p-6 md:p-8 hover:border-syncra-lime/40 hover:bg-syncra-lime/5 transition-colors cursor-pointer h-full"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <category.icon size={32} className="text-syncra-lime" />
+                  <h3 className="text-3xl md:text-4xl font-mono uppercase">{category.title}</h3>
+                </div>
+                <p className="text-xl text-syncra-lime/70 leading-relaxed">{category.description}</p>
+              </motion.div>
+            </a>
           ))}
           </div>
         </div>

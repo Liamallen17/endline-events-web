@@ -29,9 +29,12 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
 
         {/* Modal Body */}
         <div className="p-8 md:p-12">
-          <h2 className="text-3xl md:text-4xl font-mono uppercase text-syncra-lime mb-8">
+          <h2 className="text-3xl md:text-4xl font-mono uppercase text-syncra-lime mb-2">
             Terms & Conditions
           </h2>
+          <p className="text-syncra-lime/70 mb-8">
+            Boughton Ultra - Boughton Estate, Northamptonshire, UK
+          </p>
 
           <div className="space-y-8 text-syncra-lime/90">
             {/* Entry & Registration */}
@@ -52,9 +55,11 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
               <ul className="space-y-3 list-disc list-inside text-syncra-lime/80">
                 <li>Participants enter at their own risk and are responsible for their own health and fitness</li>
                 <li>You must be medically fit to compete in an ultra-endurance event</li>
+                <li>We recommend consulting a medical professional if you have concerns about your ability to participate</li>
                 <li>The organiser reserves the right to withdraw any participant on medical grounds</li>
                 <li>First aid will be available but participants are responsible for their own wellbeing</li>
                 <li>Any pre-existing medical conditions must be disclosed at registration</li>
+                <li>Follow event rules and instructions from staff; non-compliance may result in disqualification</li>
               </ul>
             </section>
 
@@ -63,6 +68,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
               <h3 className="text-xl font-mono uppercase mb-4 text-syncra-lime">Liability</h3>
               <ul className="space-y-3 list-disc list-inside text-syncra-lime/80">
                 <li>Endline Events Ltd accepts no liability for loss, damage, or injury</li>
+                <li>Boughton Estate and all associated staff are not liable for travel costs or weather-related issues</li>
                 <li>Participants are responsible for their own property and belongings</li>
                 <li>Participants agree to indemnify the organisers against any claims</li>
                 <li>Event insurance does not cover personal injury or loss of property</li>
@@ -84,8 +90,8 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
               <h3 className="text-xl font-mono uppercase mb-4 text-syncra-lime">Event Changes & Cancellation</h3>
               <ul className="space-y-3 list-disc list-inside text-syncra-lime/80">
                 <li>The organiser reserves the right to modify the course or format</li>
+                <li>If postponed or cancelled, entries carry over to a future event</li>
                 <li>In case of cancellation due to circumstances beyond our control, refunds are not guaranteed</li>
-                <li>The organiser will make reasonable efforts to reschedule cancelled events</li>
                 <li>Weather conditions may affect the event but will not automatically result in cancellation</li>
               </ul>
             </section>
@@ -96,10 +102,10 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
               <p className="text-syncra-lime/80">
                 For any questions regarding these terms, please contact us at{' '}
                 <a
-                  href="mailto:boughtonbackyardultra@gmail.com"
+                  href="mailto:endlineevents@gmail.com"
                   className="text-syncra-lime hover:underline"
                 >
-                  boughtonbackyardultra@gmail.com
+                  endlineevents@gmail.com
                 </a>
               </p>
             </section>

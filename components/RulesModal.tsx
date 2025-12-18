@@ -34,26 +34,24 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           </h2>
 
           <div className="space-y-8 text-syncra-lime/90">
-            {/* Race Format */}
+            {/* Race Schedule */}
             <section>
-              <h3 className="text-xl font-mono uppercase mb-4 text-syncra-lime">Race Format</h3>
+              <h3 className="text-xl font-mono uppercase mb-4 text-syncra-lime">Race Schedule</h3>
               <ul className="space-y-3 list-disc list-inside text-syncra-lime/80">
-                <li>Each lap is 6.7km (4.2 miles) and must be completed within one hour</li>
-                <li>Laps begin on the hour, every hour</li>
-                <li>Athletes must be at the start line before the horn sounds</li>
-                <li>If you are not at the start line when the horn sounds, you are out</li>
-                <li>The last athlete standing wins</li>
+                <li>The race starts at 12:00pm on race day</li>
+                <li>Athletes must be lined up and ready to start by 11:59am</li>
+                <li>You must be back at the line, prepared to go again, by :59 every hour that follows</li>
+                <li>The bell will ring on the hour to signal the start of each new lap</li>
               </ul>
             </section>
 
-            {/* Timing */}
+            {/* Race Rules */}
             <section>
-              <h3 className="text-xl font-mono uppercase mb-4 text-syncra-lime">Timing</h3>
+              <h3 className="text-xl font-mono uppercase mb-4 text-syncra-lime">Race Rules</h3>
               <ul className="space-y-3 list-disc list-inside text-syncra-lime/80">
-                <li>The race starts at 12:00 noon on May 2nd, 2026</li>
-                <li>Each hour window starts exactly on the hour</li>
-                <li>You have until the next hour to complete your lap and return to the start</li>
-                <li>Any remaining time before the next hour is your rest period</li>
+                <li>If you fail to complete a lap within the hour, you will receive a DNF (Did Not Finish) and your race ends there</li>
+                <li>If you fail to start on the hour, you will lose your place in the event</li>
+                <li>If you voluntarily withdraw from the race, you will lose your place in the event</li>
               </ul>
             </section>
 
@@ -62,20 +60,23 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
               <h3 className="text-xl font-mono uppercase mb-4 text-syncra-lime">Category Rules</h3>
               <div className="space-y-4 text-syncra-lime/80">
                 <div>
-                  <strong className="text-syncra-lime">Last Man Standing (Solo 24hr):</strong>
+                  <strong className="text-syncra-lime">Last Man Standing:</strong>
                   <p className="mt-1">Individual athlete completes every lap until only one remains.</p>
-                </div>
-                <div>
-                  <strong className="text-syncra-lime">Full Pair (24 Hours):</strong>
-                  <p className="mt-1">Two athletes alternate laps. Each athlete must complete at least one lap before the other can run again.</p>
                 </div>
                 <div>
                   <strong className="text-syncra-lime">Half Solo (12 Hours):</strong>
                   <p className="mt-1">Individual athlete competes for 12 hours. Furthest distance wins.</p>
                 </div>
+              </div>
+            </section>
+
+            {/* Pairs */}
+            <section>
+              <h3 className="text-xl font-mono uppercase mb-4 text-syncra-lime">Pairs</h3>
+              <div className="space-y-4 text-syncra-lime/80">
                 <div>
-                  <strong className="text-syncra-lime">Half Pair (12 Hours):</strong>
-                  <p className="mt-1">Two athletes share 12 hours of running. Same alternating rules as Full Pair.</p>
+                  <strong className="text-syncra-lime">Full Pair (24 Hours) & Half Pair (12 Hours):</strong>
+                  <p className="mt-1">Partners must alternate laps and cannot run consecutive laps. If one partner is unable to continue, the team will be marked as DNF. Plan your pacing and rest to support each other throughout the race.</p>
                 </div>
               </div>
             </section>

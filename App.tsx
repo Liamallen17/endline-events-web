@@ -12,6 +12,7 @@ import { Footer } from './components/Footer';
 import { BBUEvent } from './pages/BBUEvent';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { CookiePolicy } from './pages/CookiePolicy';
+import { ScrollToTop } from './components/ScrollToTop';
 
 // Homepage component with all sections
 const HomePage: React.FC = () => {
@@ -35,6 +36,7 @@ const HomePage: React.FC = () => {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/events/bbu" element={<BBUEvent />} />

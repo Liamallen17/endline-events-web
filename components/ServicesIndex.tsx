@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { TracksixModal } from './TracksixModal';
 
 export const ServicesIndex: React.FC = () => {
+  const [showTracksixModal, setShowTracksixModal] = useState(false);
   return (
     <section className="py-24 border-t border-syncra-lime/20 relative bg-syncra-black">
       <div className="container">
@@ -33,6 +36,15 @@ export const ServicesIndex: React.FC = () => {
               Find your race
             </span>
           </a>
+
+          <Link 
+            to="/events/bbu"
+            className="inline-block group"
+          >
+            <span className="text-sm uppercase tracking-wide font-mono border-b border-syncra-lime hover:opacity-70 transition-opacity">
+              Race Info
+            </span>
+          </Link>
         </div>
 
         {/* Right Card - Tracksix */}
@@ -57,9 +69,21 @@ export const ServicesIndex: React.FC = () => {
               Find your race
             </span>
           </a>
+
+          <button 
+            onClick={() => setShowTracksixModal(true)}
+            className="inline-block group"
+          >
+            <span className="text-sm uppercase tracking-wide font-mono border-b border-syncra-lime hover:opacity-70 transition-opacity">
+              Race Info
+            </span>
+          </button>
         </div>
         </div>
       </div>
+
+      {/* Tracksix Modal */}
+      <TracksixModal isOpen={showTracksixModal} onClose={() => setShowTracksixModal(false)} />
     </section>
   );
 };
