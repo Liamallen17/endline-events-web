@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
-import { TracksixModal } from './TracksixModal';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
-  const [showTracksixModal, setShowTracksixModal] = useState(false);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -24,14 +22,10 @@ export const Navbar: React.FC = () => {
     navigate('/events/bbu');
   };
 
-  const openTracksixModal = () => {
-    setShowTracksixModal(true);
+  const navigateToTracksix = () => {
     setDropdownOpen(false);
     setMobileMenuOpen(false);
-  };
-
-  const closeTracksixModal = () => {
-    setShowTracksixModal(false);
+    navigate('/events/tracksix');
   };
 
   return (
@@ -70,7 +64,7 @@ export const Navbar: React.FC = () => {
                     BBU
                   </button>
                   <button
-                    onClick={openTracksixModal}
+                    onClick={navigateToTracksix}
                     className="w-full text-left px-6 py-3 text-sm tracking-wide hover:bg-syncra-lime/10 transition-colors border-t border-syncra-lime/10"
                   >
                     Tracksix
@@ -128,7 +122,7 @@ export const Navbar: React.FC = () => {
                   BBU
                 </button>
                 <button
-                  onClick={openTracksixModal}
+                  onClick={navigateToTracksix}
                   className="block text-lg font-mono uppercase text-syncra-lime/80 hover:text-syncra-lime"
                 >
                   Tracksix
@@ -152,8 +146,6 @@ export const Navbar: React.FC = () => {
         </div>
       )}
 
-      {/* Tracksix Modal */}
-      <TracksixModal isOpen={showTracksixModal} onClose={closeTracksixModal} />
     </>
   );
 }

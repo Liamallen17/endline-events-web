@@ -122,6 +122,27 @@ export const BBUEvent: React.FC = () => {
         </div>
       </section>
 
+      {/* Find Your Race Link */}
+      <section className="py-12 md:py-16">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.55 }}
+            className="text-center"
+          >
+            <a
+              href="https://boughtonbackyardultra.co.uk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-2xl md:text-3xl font-mono uppercase text-syncra-lime underline underline-offset-8 hover:opacity-70 transition-opacity"
+            >
+              Find Your Race
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Four Categories Section */}
       <section className="py-16 md:py-24 bg-syncra-black">
         <div className="container">
@@ -192,7 +213,7 @@ export const BBUEvent: React.FC = () => {
                 href="mailto:boughtonbackyardultra@gmail.com"
                 className="text-syncra-lime hover:underline"
               >
-                boughtonbackyardultra@gmail.com
+                endlineevents@gmail.com
               </a>
             </p>
           </div>

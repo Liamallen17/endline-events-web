@@ -96,6 +96,38 @@
           padding: 0 3rem; /* 48px - tablet/desktop */
         }
       }
+
+      /* Tracksix Event Page Styles */
+      .tracksix {
+        --tracksix-blue: #38BDF8;
+        --tracksix-purple: #A855F7;
+      }
+
+      .tracksix .gradient-text {
+        background: linear-gradient(90deg, var(--tracksix-blue), var(--tracksix-purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .tracksix .gradient-border {
+        border: 2px solid transparent;
+        background: linear-gradient(#0a0a0a, #0a0a0a) padding-box,
+                    linear-gradient(90deg, var(--tracksix-blue), var(--tracksix-purple)) border-box;
+      }
+
+      .tracksix .gradient-divider {
+        height: 2px;
+        background: linear-gradient(90deg, var(--tracksix-blue), var(--tracksix-purple));
+      }
+
+      .tracksix .accent-blue {
+        color: var(--tracksix-blue);
+      }
+
+      .tracksix .accent-purple {
+        color: var(--tracksix-purple);
+      }
     </style>
   <script type="importmap">
 {

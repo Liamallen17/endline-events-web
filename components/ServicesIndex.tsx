@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { TracksixModal } from './TracksixModal';
 
 export const ServicesIndex: React.FC = () => {
-  const [showTracksixModal, setShowTracksixModal] = useState(false);
   return (
     <section className="py-24 border-t border-syncra-lime/20 relative bg-syncra-black">
       <div className="container">
@@ -70,20 +68,17 @@ export const ServicesIndex: React.FC = () => {
             </span>
           </a>
 
-          <button 
-            onClick={() => setShowTracksixModal(true)}
+          <Link 
+            to="/events/tracksix"
             className="inline-block group"
           >
             <span className="text-sm uppercase tracking-wide font-mono border-b border-syncra-lime hover:opacity-70 transition-opacity">
               Race Info
             </span>
-          </button>
+          </Link>
         </div>
         </div>
       </div>
-
-      {/* Tracksix Modal */}
-      <TracksixModal isOpen={showTracksixModal} onClose={() => setShowTracksixModal(false)} />
     </section>
   );
 };
