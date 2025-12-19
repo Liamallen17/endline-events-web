@@ -14,7 +14,7 @@ export const Contact: React.FC = () => {
               </h3>
               
               <div className="w-full aspect-[3/4] mt-12 rounded-2xl md:rounded-3xl overflow-hidden">
-                 <img src="/FTP-639.JPG" className="w-full h-full object-cover" alt="Event atmosphere" />
+                 <img src="/endline-events-web/FTP-639.JPG" className="w-full h-full object-cover" alt="Event atmosphere" />
               </div>
             </div>
           </div>

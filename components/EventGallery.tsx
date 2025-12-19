@@ -14,7 +14,7 @@ export const EventGallery: React.FC = () => {
           <div className="relative rounded-2xl md:rounded-3xl overflow-hidden aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9]">
             {/* Background image with hover effects */}
             <img 
-              src="/FTP-428.JPG" 
+              src="/endline-events-web/FTP-428.JPG" 
               alt="Event Gallery"
               className="absolute inset-0 w-full h-full object-cover brightness-50 scale-100 group-hover:brightness-100 group-hover:scale-105 transition-all duration-500 ease-out"
             />
