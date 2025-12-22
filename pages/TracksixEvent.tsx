@@ -74,7 +74,7 @@ export const TracksixEvent: React.FC = () => {
         {/* Background Image - contain to prevent upscaling blur */}
         <div
           className="absolute inset-0 bg-contain bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(/endline-events-web/Tracksix1.jpg)' }}
+          style={{ backgroundImage: `url(${import.meta.env.BASE_URL}Tracksix1.jpg)` }}
         />
         {/* Radial vignette for seamless edge blend */}
         <div 

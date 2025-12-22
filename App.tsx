@@ -36,7 +36,7 @@ const HomePage: React.FC = () => {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/endline-events-web/">
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
