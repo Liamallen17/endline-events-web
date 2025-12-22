@@ -48,7 +48,7 @@ export const BBUEvent: React.FC = () => {
         {/* Background Image with Grayscale */}
         <div
           className="absolute inset-0 bg-cover bg-center grayscale"
-          style={{ backgroundImage: 'url(/endline-events-web/FTP-623.JPG)' }}
+          style={{ backgroundImage: `url(${import.meta.env.BASE_URL}FTP-623.JPG)` }}
         />
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-syncra-black/40 via-transparent to-syncra-black" />

@@ -18,7 +18,7 @@ export const ServicesIndex: React.FC = () => {
           
           <div className="w-full max-w-xs max-h-64 flex items-center justify-center coin-spin-container">
             <img 
-              src="/endline-events-web/BBU Medal Transparent.png" 
+              src={`${import.meta.env.BASE_URL}BBU Medal Transparent.png`} 
               alt="Boughton Backyard Ultra Medal"
               className="w-full h-full object-contain coin-spin"
             />
@@ -53,7 +53,7 @@ export const ServicesIndex: React.FC = () => {
           
           <div className="w-full max-w-xs max-h-64 flex items-center justify-center coin-spin-container">
             <img 
-              src="/endline-events-web/Tracksix1.jpg" 
+              src={`${import.meta.env.BASE_URL}Tracksix1.jpg`} 
               alt="Tracksix"
               className="w-full h-full object-contain coin-spin"
             />

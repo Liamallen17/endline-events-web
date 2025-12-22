@@ -5,7 +5,7 @@ export const ImageBanner: React.FC = () => {
     <section className="w-full overflow-hidden bg-syncra-black">
       <div className="w-full opacity-60">
         <img 
-          src="/endline-events-web/EEwebpic.jpg" 
+          src={`${import.meta.env.BASE_URL}EEwebpic.jpg`} 
           className="w-full h-auto object-contain grayscale"
           alt="Crowd background"
         />

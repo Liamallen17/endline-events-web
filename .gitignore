@@ -22,3 +22,17 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.wrangler/
+.dev.vars
+*.log
+
+# Local D1 database
+.wrangler/state/
+
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
