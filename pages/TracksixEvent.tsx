@@ -9,29 +9,6 @@ export const TracksixEvent: React.FC = () => {
   const [showRules, setShowRules] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
-  const steps = [
-    {
-      number: 1,
-      title: 'Create Your Team',
-      description: 'Assemble a squad of 4-6 runners. Mix experience levels, balance strengths, and prepare for a true team challenge.',
-    },
-    {
-      number: 2,
-      title: 'Run the Mile',
-      description: 'Each runner completes 4 laps (1 mile) around the track. Push your pace—every second counts toward the team total.',
-    },
-    {
-      number: 3,
-      title: 'Relay Changeover',
-      description: 'Tag your next teammate in the relay zone. Smooth transitions keep momentum high and the laps flowing.',
-    },
-    {
-      number: 4,
-      title: 'Repeat for 6 Hours',
-      description: 'Rotate through your team continuously for the full 6-hour event. Strategy and endurance determine the winner.',
-    },
-  ];
-
   const winCategories = [
     {
       icon: Trophy,
@@ -98,7 +75,7 @@ export const TracksixEvent: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <h2 className="text-4xl md:text-5xl font-mono uppercase mb-6 gradient-text">
+              <h2 className="text-4xl md:text-5xl font-mono uppercase mb-6 accent-blue">
                 The Event
               </h2>
               <p className="text-lg md:text-xl text-white/80 leading-relaxed">
@@ -115,7 +92,7 @@ export const TracksixEvent: React.FC = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="gradient-border rounded-xl p-6 md:p-8"
+              className="border-2 border-[#38BDF8] rounded-xl p-6 md:p-8"
             >
               <h3 className="text-2xl font-mono uppercase mb-6 accent-blue">Key Details</h3>
               <ul className="space-y-4">
@@ -148,38 +125,14 @@ export const TracksixEvent: React.FC = () => {
       {/* Gradient Divider */}
       <div className="gradient-divider w-full max-w-4xl mx-auto" />
 
-      {/* How It Works Section */}
-      <section className="py-16 md:py-24">
-        <div className="container">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-4xl md:text-5xl font-mono uppercase mb-12 text-center gradient-text"
-          >
-            How It Works
-          </motion.h2>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.number}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
-                className="gradient-border rounded-xl p-6 hover:bg-white/5 transition-colors"
-              >
-                <div className="text-5xl font-bold mb-4 gradient-text">{step.number}</div>
-                <h3 className="text-xl font-mono uppercase mb-3 accent-blue">{step.title}</h3>
-                <p className="text-white/70 leading-relaxed">{step.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Gradient Divider */}
-      <div className="gradient-divider w-full max-w-4xl mx-auto" />
+      {/* Decorative Pulse Element */}
+      <div className="flex justify-center py-8">
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="w-3 h-3 rounded-full bg-[#38BDF8]"
+        />
+      </div>
 
       {/* Winning Categories Section */}
       <section className="py-16 md:py-24">
@@ -188,7 +141,7 @@ export const TracksixEvent: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-4xl md:text-5xl font-mono uppercase mb-12 text-center gradient-text"
+            className="text-4xl md:text-5xl font-mono uppercase mb-12 text-center accent-blue"
           >
             Winning Categories
           </motion.h2>
@@ -200,7 +153,7 @@ export const TracksixEvent: React.FC = () => {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
-                className="gradient-border rounded-xl p-6 md:p-8 text-center hover:bg-white/5 transition-colors"
+                className="border-2 border-[#38BDF8] rounded-xl p-6 md:p-8 text-center hover:bg-white/5 transition-colors"
               >
                 <category.icon size={40} className="mx-auto mb-4 accent-blue" />
                 <h3 className="text-xl font-mono uppercase mb-3 accent-purple">{category.title}</h3>
@@ -223,7 +176,7 @@ export const TracksixEvent: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="max-w-3xl mx-auto"
           >
-            <h2 className="text-4xl md:text-5xl font-mono uppercase mb-8 text-center gradient-text">
+            <h2 className="text-4xl md:text-5xl font-mono uppercase mb-8 text-center accent-blue">
               Strategy Counts
             </h2>
             <p className="text-lg text-white/80 text-center mb-8">
@@ -259,13 +212,13 @@ export const TracksixEvent: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="text-center"
           >
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono uppercase mb-6 gradient-text">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono uppercase mb-6 accent-blue">
               Build Your Team. Take the Track.
             </h2>
             <p className="text-lg text-white/70 mb-8">Limited team places available</p>
             <a
               href="#"
-              className="inline-block px-10 py-4 text-lg font-mono uppercase transition-all rounded-lg gradient-border hover:bg-white/10"
+              className="inline-block px-10 py-4 text-lg font-mono uppercase transition-all rounded-lg border-2 border-[#38BDF8] hover:bg-white/10"
               style={{ color: 'var(--tracksix-blue)' }}
             >
               Register Now
@@ -284,14 +237,14 @@ export const TracksixEvent: React.FC = () => {
           <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12">
             <button
               onClick={() => setShowRules(true)}
-              className="px-8 py-3 font-mono uppercase transition-all rounded-lg gradient-border hover:bg-white/10"
+              className="px-8 py-3 font-mono uppercase transition-all rounded-lg border-2 border-[#38BDF8] hover:bg-white/10"
               style={{ color: 'var(--tracksix-blue)' }}
             >
               Timings & Rules
             </button>
             <button
               onClick={() => setShowTerms(true)}
-              className="px-8 py-3 font-mono uppercase transition-all rounded-lg gradient-border hover:bg-white/10"
+              className="px-8 py-3 font-mono uppercase transition-all rounded-lg border-2 border-[#38BDF8] hover:bg-white/10"
               style={{ color: 'var(--tracksix-blue)' }}
             >
               Terms & Conditions

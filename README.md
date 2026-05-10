@@ -1,20 +1,31 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Endline Events
 
-# Run and deploy your AI Studio app
+Marketing and event information site for Endline Events, a UK-based endurance sports event company.
 
-This contains everything you need to run your app locally.
+Built with React 19 + TypeScript + Vite. Deployed to GitHub Pages.
 
-View your app in AI Studio: https://ai.studio/apps/temp/2
+## Events
+
+- **Boughton Backyard Ultra** — May 2, 2026 at Boughton Estate, Northamptonshire. Backyard Ultra format, 4.2 mile loops.
+- **Tracksix** — 6-hour team relay event, Northants. Date TBD.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js
 
+```bash
+npm install
+npm run dev
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## Deploy
+
+Deployed automatically to GitHub Pages via GitHub Actions on push to `main`.
+Live at: `https://<user>.github.io/endline-events-web/`

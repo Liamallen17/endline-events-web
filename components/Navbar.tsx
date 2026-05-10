@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -11,7 +11,9 @@ export const Navbar: React.FC = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const navbarHeight = 88;
+      const top = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
+      window.scrollTo({ top, behavior: 'smooth' });
       setMobileMenuOpen(false);
     }
   };
@@ -32,14 +34,13 @@ export const Navbar: React.FC = () => {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 py-6 md:py-8 bg-syncra-black/90 backdrop-blur-sm">
         <div className="container flex items-start justify-between">
-          {/* Logo Text - Links back to top */}
-          <a 
-            href="#" 
-            onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          {/* Logo Text - Links back to home */}
+          <Link
+            to="/"
             className="text-sm font-normal tracking-wide uppercase hover:opacity-70 transition-opacity"
           >
             ENDLINE EVENTS
-          </a>
+          </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-12">
@@ -73,12 +74,12 @@ export const Navbar: React.FC = () => {
               )}
             </div>
 
-            <button 
-              onClick={() => scrollToSection('gallery')} 
+            <Link
+              to="/gallery"
               className="text-sm font-normal tracking-wide hover:opacity-70 transition-opacity"
             >
               GALLERY
-            </button>
+            </Link>
             <button 
               onClick={() => scrollToSection('contact')} 
               className="text-sm font-normal tracking-wide hover:opacity-70 transition-opacity"
@@ -131,12 +132,13 @@ export const Navbar: React.FC = () => {
             )}
           </div>
           
-          <button 
-            onClick={() => scrollToSection('gallery')} 
+          <Link
+            to="/gallery"
+            onClick={() => setMobileMenuOpen(false)}
             className="text-xl font-mono uppercase border-b border-syncra-lime/20 pb-4 text-left text-syncra-lime"
           >
             Gallery
-          </button>
+          </Link>
           <button 
             onClick={() => scrollToSection('contact')} 
             className="text-xl font-mono uppercase border-b border-syncra-lime/20 pb-4 text-left text-syncra-lime"

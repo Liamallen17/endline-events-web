@@ -6,13 +6,13 @@ import { BrandingBar } from './components/BrandingBar';
 import { ImageBanner } from './components/ImageBanner';
 import { About } from './components/About';
 import { ServicesIndex } from './components/ServicesIndex';
-import { EventGallery } from './components/EventGallery';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 import { BBUEvent } from './pages/BBUEvent';
 import { TracksixEvent } from './pages/TracksixEvent';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { CookiePolicy } from './pages/CookiePolicy';
+import { GalleryPage } from './pages/GalleryPage';
 import { ScrollToTop } from './components/ScrollToTop';
 
 // Homepage component with all sections
@@ -26,7 +26,6 @@ const HomePage: React.FC = () => {
         <ImageBanner />
         <About />
         <ServicesIndex />
-        <EventGallery />
         <Contact />
       </main>
       <Footer />
@@ -36,12 +35,13 @@ const HomePage: React.FC = () => {
 
 export default function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter basename="/endline-events-web/">
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/events/bbu" element={<BBUEvent />} />
         <Route path="/events/tracksix" element={<TracksixEvent />} />
+        <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/cookies" element={<CookiePolicy />} />
       </Routes>
