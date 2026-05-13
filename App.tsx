@@ -35,7 +35,7 @@ const HomePage: React.FC = () => {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/endline-events-web/">
+    <BrowserRouter>
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />

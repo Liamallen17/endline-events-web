@@ -1,13 +1,13 @@
 # Endline Events Web
 
-Marketing and event information site for **Endline Events**, a UK-based endurance sports event company. Built with React + TypeScript + Vite, deployed to GitHub Pages.
+Marketing and event information site for **Endline Events**, a UK-based endurance sports event company. Built with React + TypeScript + Vite. Originally deployed to GitHub Pages under the path `/endline-events-web/`; currently migrating to Cloudflare (served from `/`). A `worker/` directory holds the Cloudflare Worker.
 
 ## Tech Stack
 
 - **React 19** with TypeScript
 - **Vite 6** — dev server and build tool
-- **React Router v7** — client-side routing, basename `/endline-events-web/`
-- **Tailwind CSS** — loaded via CDN in `index.html` (not installed as a package); config is inline in the `<script>` block in `index.html`
+- **React Router v7** — client-side routing, served from `/` (no basename)
+- **Tailwind CSS v4** — installed as an npm package, wired up via the `@tailwindcss/vite` plugin in `vite.config.ts`; theme tokens and global CSS live in `src/index.css`
 - **Framer Motion** — page/section animations
 - **Lucide React** — icons
 
@@ -24,11 +24,13 @@ npm run preview # preview production build locally
 
 ```
 App.tsx              # Root: BrowserRouter + route definitions
-index.tsx            # React entry point
-index.html           # HTML shell; holds Tailwind CDN + config, global CSS, fonts
+index.tsx            # React entry point; imports src/index.css
+index.html           # HTML shell — fonts only; Tailwind comes from src/index.css now
+src/index.css        # Tailwind v4 entry: @import "tailwindcss" + @theme tokens + global CSS
 components/          # Reusable UI components
 pages/               # Full-page route components
 public/              # Static assets (images)
+worker/              # Cloudflare Worker (migration in progress)
 ```
 
 ### Routes
@@ -67,46 +69,50 @@ public/              # Static assets (images)
 
 ## Styling
 
-**Important:** Tailwind is loaded via CDN — do not install it as an npm package or add a `tailwind.config.js` file. The Tailwind config lives in a `<script>` block inside `index.html`.
+Tailwind v4 is configured CSS-first in `src/index.css` via `@import "tailwindcss"` and an `@theme` block. There is no `tailwind.config.js`. The `@tailwindcss/vite` plugin (registered in `vite.config.ts`) handles compilation.
 
-**Custom design tokens** (defined in `index.html` Tailwind config):
+**Custom design tokens** (defined in the `@theme` block in `src/index.css`):
 
-```js
-colors: {
-  syncra: {
-    black: '#0a0a0a',   // primary background
-    lime: '#dfff87',    // primary accent / text color
-    gray: '#333333'
-  }
-}
-fontFamily: {
-  mono: ['"Space Mono"', monospace],      // body/UI text
-  display: ['"Michroma"', sans-serif],    // large display headings (BrandingBar)
-}
+```css
+--font-mono: "Space Mono", monospace;
+--font-display: "Michroma", sans-serif;
+
+--color-syncra-black: #0a0a0a;   /* primary background */
+--color-syncra-lime: #dfff87;    /* primary accent / text color */
+--color-syncra-gray: #333333;
+
+--color-tracksix-blue: #38BDF8;
+--color-tracksix-purple: #A855F7;
 ```
 
-**Global CSS** lives in the `<style>` block in `index.html`:
+Tailwind v4 generates utility classes from these tokens (e.g. `bg-syncra-black`, `text-syncra-lime`, `font-display`).
+
+**Global CSS** (also in `src/index.css`, outside the `@theme` block):
 - `.container` — max-width 1200px, 20px mobile padding, 48px tablet+ padding
 - `.tracksix` — CSS custom property scope for the Tracksix page blue/purple theme (`--tracksix-blue: #38BDF8`, `--tracksix-purple: #A855F7`)
-- `.accent-blue` / `.accent-purple` / `.gradient-divider` — Tracksix-specific utility classes scoped under `.tracksix`
+- `.accent-blue` / `.accent-purple` / `.gradient-divider` / `.gradient-text` / `.gradient-border` — Tracksix-specific utility classes scoped under `.tracksix`
 - Lime-colored scrollbars via `::-webkit-scrollbar`
+- `body` background/foreground are set directly in CSS, not via Tailwind utility classes
 
 **Tracksix page** uses a blue/purple color scheme (sky blue + violet) instead of the default lime theme. These colors are applied via `.tracksix` scoped CSS vars, not Tailwind tokens.
 
 ## Static Assets
 
-All images are in `public/` and referenced with the `/endline-events-web/` prefix (matching the Vite `base` config):
+All images live in `public/`. Several components (e.g. `Contact.tsx`, `GalleryPage.tsx`) still reference them with the legacy `/endline-events-web/` prefix from the GitHub Pages era — these paths will 404 once Cloudflare is live and need to be flattened to root-relative (`/FTP-623.JPG`, etc.) as part of the migration.
 
-- `/endline-events-web/FTP-623.JPG` — BBU hero background
-- `/endline-events-web/BBU-25-1.JPG` — BBU 25.1 gallery card image
-- `/endline-events-web/BBU-26-1.JPG` — BBU 26.1 gallery card image
-- `/endline-events-web/Tracksix1.jpg` — Tracksix hero background
-- `/endline-events-web/EEwebpic.jpg` — general use
-- `/endline-events-web/BBU Medal Transparent.png` — BBU medal image
+- `FTP-623.JPG` — BBU hero background
+- `BBU-25-1.JPG` — BBU 25.1 gallery card image
+- `BBU-26-1.JPG` — BBU 26.1 gallery card image
+- `Tracksix1.jpg` — Tracksix hero background
+- `EEwebpic.jpg` — general use
+- `BBU Medal Transparent.png` — BBU medal image
 
 ## Deployment
 
-Deployed to GitHub Pages at `https://<user>.github.io/endline-events-web/`. The Vite `base` is set to `/endline-events-web/` in `vite.config.ts`, and `BrowserRouter` uses the same basename. The GitHub Actions workflow handles deployment.
+Migrating from GitHub Pages to Cloudflare.
+
+- **Cloudflare (in progress):** site is served from `/`. `vite.config.ts` no longer sets `base`, and `BrowserRouter` no longer sets a `basename`. The `worker/` directory contains the Cloudflare Worker.
+- **GitHub Pages (legacy):** the `.github/workflows/deploy.yml` workflow still exists and would deploy to `https://<user>.github.io/endline-events-web/`, but that deploy is now broken because the `base` path was removed — it should either be re-added conditionally (`import.meta.env.BASE_URL`) or the workflow retired once Cloudflare goes live.
 
 ## Events
 
