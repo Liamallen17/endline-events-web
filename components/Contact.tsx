@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
 const images = [
-  { src: '/endline-events-web/FTP-639.JPG', alt: 'Event atmosphere' },
-  { src: '/endline-events-web/FTP-623.JPG', alt: 'Event atmosphere' },
-  { src: '/endline-events-web/BBU-26-1.JPG', alt: 'Event atmosphere' },
-  { src: '/endline-events-web/BBU-25-1.JPG', alt: 'Event atmosphere' },
+  { src: `${import.meta.env.BASE_URL}FTP-639.JPG`, alt: 'Event atmosphere' },
+  { src: `${import.meta.env.BASE_URL}FTP-623.JPG`, alt: 'Event atmosphere' },
+  { src: `${import.meta.env.BASE_URL}BBU-26-1.JPG`, alt: 'Event atmosphere' },
+  { src: `${import.meta.env.BASE_URL}BBU-25-1.JPG`, alt: 'Event atmosphere' },
 ];
 
 export const Contact: React.FC = () => {

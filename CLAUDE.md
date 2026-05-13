@@ -98,7 +98,7 @@ Tailwind v4 generates utility classes from these tokens (e.g. `bg-syncra-black`,
 
 ## Static Assets
 
-All images live in `public/`. Several components (e.g. `Contact.tsx`, `GalleryPage.tsx`) still reference them with the legacy `/endline-events-web/` prefix from the GitHub Pages era — these paths will 404 once Cloudflare is live and need to be flattened to root-relative (`/FTP-623.JPG`, etc.) as part of the migration.
+All images live in `public/`. Components reference them with `${import.meta.env.BASE_URL}<filename>` (e.g. `${import.meta.env.BASE_URL}FTP-623.JPG`) so the path automatically tracks whatever Vite `base` is configured — `/` on Cloudflare, `/endline-events-web/` if `base` is ever re-added for GitHub Pages.
 
 - `FTP-623.JPG` — BBU hero background
 - `BBU-25-1.JPG` — BBU 25.1 gallery card image

@@ -5,13 +5,13 @@ import { Footer } from '../components/Footer';
 
 const GALLERY_CARDS = [
   {
-    image: '/endline-events-web/BBU-25-1.JPG',
+    image: `${import.meta.env.BASE_URL}BBU-25-1.JPG`,
     title: 'BBU 25.1',
     subtitle: 'Boughton Backyard Ultra · 2025',
     href: 'https://david-lester.pixieset.com/boughtonbackyardultra/',
   },
   {
-    image: '/endline-events-web/BBU-26-1.JPG',
+    image: `${import.meta.env.BASE_URL}BBU-26-1.JPG`,
     title: 'BBU 26.1',
     subtitle: 'Boughton Backyard Ultra · 2026',
     href: 'https://david-lester.pixieset.com/boughtonbackyardultra2026/',
