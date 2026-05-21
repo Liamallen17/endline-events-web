@@ -1,0 +1,26 @@
+name = "endline-events-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+# Served same-origin as the frontend, so /api/* routes through this worker
+# while everything else falls through to Cloudflare Pages on the same zone.
+routes = [
+  { pattern = "endlineevents.com/api/*", zone_name = "endlineevents.com" }
+]
+
+# Local development
+[dev]
+port = 8787
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "endline-events"
+database_id = "68cd6d3b-7e41-4a5d-a86c-5b8cedce506a"
+migrations_dir = "migrations"
+
+# Production values — overridden locally via .dev.vars.
+# Secrets (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) are not declared here;
+# set them with `wrangler secret put` for prod and in .dev.vars for local dev.
+[vars]
+SITE_URL = "https://endlineevents.com"

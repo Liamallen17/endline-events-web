@@ -1,0 +1,17 @@
+node_modules/
+.wrangler/
+.dev.vars
+*.log
+
+# Local D1 database
+.wrangler/state/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

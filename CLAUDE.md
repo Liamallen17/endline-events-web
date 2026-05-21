@@ -109,10 +109,14 @@ All images live in `public/`. Components reference them with `${import.meta.env.
 
 ## Deployment
 
-Migrating from GitHub Pages to Cloudflare.
+Two independent GitHub Actions, both targeting Cloudflare. Pages' native git integration isn't used because the upstream repo is owned by the client, not the deploying Cloudflare account — connecting it via the dashboard isn't allowed for shared-with-you repos.
 
-- **Cloudflare (in progress):** site is served from `/`. `vite.config.ts` no longer sets `base`, and `BrowserRouter` no longer sets a `basename`. The `worker/` directory contains the Cloudflare Worker.
-- **GitHub Pages (legacy):** the `.github/workflows/deploy.yml` workflow still exists and would deploy to `https://<user>.github.io/endline-events-web/`, but that deploy is now broken because the `base` path was removed — it should either be re-added conditionally (`import.meta.env.BASE_URL`) or the workflow retired once Cloudflare goes live.
+- **Frontend (Cloudflare Pages):** `.github/workflows/deploy-frontend.yml` runs `wrangler pages deploy dist --project-name=endline-events --branch=main` on push to `main`, skipped when only `worker/**` files change. Served from `/` on `endlineevents.com`; `vite.config.ts` does not set `base` and `BrowserRouter` has no `basename`.
+- **Worker (`worker/`):** `.github/workflows/deploy-worker.yml` runs `wrangler deploy` on push to `main` when `worker/**` changes. Binds to `endlineevents.com/api/*` via the `routes` entry in `worker/wrangler.toml`, so frontend `fetch('/api/...')` calls are same-origin.
+
+Both workflows require `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repo secrets. The token needs **Workers Scripts:Edit**, **Workers Routes:Edit** (zone-scoped to `endlineevents.com`), and **Cloudflare Pages:Edit**.
+
+D1 migrations are not run by the deploy workflow — apply them manually with `cd worker && npm run db:migrate:remote` before pushing code that depends on the new schema.
 
 ## Events
 

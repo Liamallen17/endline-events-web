@@ -1,0 +1,9 @@
+# Copy this to .dev.vars and fill in your values
+# These are used for local development with `wrangler dev` and override
+# anything declared under [vars] in wrangler.toml.
+
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Override the production SITE_URL with wherever the frontend dev server runs.
+SITE_URL=http://localhost:5173
