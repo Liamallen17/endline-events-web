@@ -1,0 +1,28 @@
+{
+  "name": "racing-events-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply endline-events --local",
+    "db:migrate:remote": "wrangler d1 migrations apply endline-events --remote",
+    "db:studio": "wrangler d1 studio endline-events --local",
+    "sync:stripe:local": "tsx scripts/sync-stripe.ts --local",
+    "sync:stripe:remote": "tsx scripts/sync-stripe.ts --remote",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "hono": "^4.6.0",
+    "stripe": "^17.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.56.0"
+  }
+}
