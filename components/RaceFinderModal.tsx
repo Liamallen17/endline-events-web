@@ -19,6 +19,7 @@ export interface Category {
   price: number;
   perPerson?: number;
   isPair: boolean;
+  isSpectator?: boolean;
 }
 
 interface AthleteDetails {
@@ -27,8 +28,6 @@ interface AthleteDetails {
   email: string;
   phone: string;
   dateOfBirth: string;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
 }
 
 export const CATEGORIES: Category[] = [
@@ -70,6 +69,16 @@ export const CATEGORIES: Category[] = [
     perPerson: 40,
     isPair: true,
   },
+  {
+    id: "spectator",
+    name: "Spectator Pass",
+    subtitle: "Helps us understand who is on-site",
+    description: "Support the event — access to the venue and finish line area. One pass per named person.",
+    icon: User,
+    price: 2,
+    isPair: false,
+    isSpectator: true,
+  },
 ];
 
 const CAMPERVAN_PRICE = 15;
@@ -80,8 +89,6 @@ const emptyAthlete: AthleteDetails = {
   email: "",
   phone: "",
   dateOfBirth: "",
-  emergencyContactName: "",
-  emergencyContactPhone: "",
 };
 
 export default function RaceFinderModal({ isOpen, onClose, initialCategory, eventLabel }: Props) {
@@ -164,8 +171,12 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
   const isAthleteFormValid = (a: AthleteDetails) =>
     a.firstName && a.lastName && a.email && a.phone && a.dateOfBirth;
 
+  const isSpectatorFormValid = (a: AthleteDetails) =>
+    Boolean(a.firstName && a.lastName && a.email && a.phone);
+
   const canContinue = (() => {
     if (!selectedCategory) return false;
+    if (selectedCategory.isSpectator) return isSpectatorFormValid(athlete1) && (!campervan || vehicleReg.length > 0);
     if (selectedCategory.isPair && athleteStep === 1) {
       return isAthleteFormValid(athlete1);
     }
@@ -196,6 +207,8 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
             <h2 className="font-display text-xs tracking-widest text-white uppercase">
               {screen === "categories"
                 ? "Select Category"
+                : selectedCategory?.isSpectator
+                ? "Spectator Details"
                 : selectedCategory?.isPair
                 ? `Athlete ${athleteStep} of 2`
                 : "Athlete Details"}
@@ -329,7 +342,7 @@ function CheckoutScreen({
 
       <div>
         <h3 className="font-display text-sm text-syncra-lime uppercase tracking-widest mb-4">
-          {category.isPair ? `Athlete ${athleteNumber}` : "Athlete Details"}
+          {category.isSpectator ? "Spectator Details" : category.isPair ? `Athlete ${athleteNumber}` : "Athlete Details"}
         </h3>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -356,23 +369,14 @@ function CheckoutScreen({
             value={athlete.phone}
             onChange={(v) => update("phone", v)}
           />
-          <Field
-            label="Date of Birth"
-            type="date"
-            value={athlete.dateOfBirth}
-            onChange={(v) => update("dateOfBirth", v)}
-          />
-          <Field
-            label="Emergency Contact Name"
-            value={athlete.emergencyContactName}
-            onChange={(v) => update("emergencyContactName", v)}
-          />
-          <Field
-            label="Emergency Contact Phone"
-            type="tel"
-            value={athlete.emergencyContactPhone}
-            onChange={(v) => update("emergencyContactPhone", v)}
-          />
+          {!category.isSpectator && (
+            <Field
+              label="Date of Birth"
+              type="date"
+              value={athlete.dateOfBirth}
+              onChange={(v) => update("dateOfBirth", v)}
+            />
+          )}
         </div>
       </div>
 
@@ -402,6 +406,11 @@ function CheckoutScreen({
                 placeholder="AB12 CDE"
               />
             </div>
+          )}
+          {!category.isSpectator && (
+            <p className="font-mono text-xs text-white/60 mt-4">
+              Bringing crew or supporters? Each person on-site needs a Spectator Pass — helps us keep an accurate headcount for safety.
+            </p>
           )}
         </div>
       )}

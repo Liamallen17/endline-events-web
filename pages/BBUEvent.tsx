@@ -67,8 +67,8 @@ export const BBUEvent: React.FC = () => {
           </motion.div>
 
           {/* Pills */}
-          <div className="flex flex-col md:flex-row gap-2 sm:gap-3 md:gap-4 justify-center">
-            <div className="flex items-center gap-2 text-base sm:text-xl md:text-2xl text-white bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-6 py-2">
+          <div className="flex flex-col md:flex-row md:flex-wrap gap-2 sm:gap-3 md:gap-4 justify-center">
+            <div className="flex items-center justify-center gap-2 text-base sm:text-xl md:text-2xl text-white bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-6 py-2">
               <MapPin size={20} className="text-syncra-lime shrink-0" />
               <span>Northamptonshire</span>
             </div>
