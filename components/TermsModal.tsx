@@ -33,7 +33,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
             Terms & Conditions
           </h2>
           <p className="text-syncra-lime/70 mb-8">
-            Boughton Ultra - Boughton Estate, Northamptonshire, UK
+            Boughton Ultra - Northamptonshire, UK
           </p>
 
           <div className="space-y-8 text-syncra-lime/90">

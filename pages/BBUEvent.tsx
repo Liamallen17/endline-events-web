@@ -1,36 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Calendar, ArrowLeft, Users, User, Clock } from 'lucide-react';
+import { MapPin, ArrowLeft, Users, User, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { RulesModal } from '../components/RulesModal';
 import { TermsModal } from '../components/TermsModal';
+import RaceFinderModal from '../components/RaceFinderModal';
 
 export const BBUEvent: React.FC = () => {
   const [showRules, setShowRules] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [isFinderOpen, setIsFinderOpen] = useState(false);
+  const [bbuDropdownOpen, setBbuDropdownOpen] = useState(false);
+  const bbuDropdownRef = useRef<HTMLDivElement>(null);
 
-  const categories = [
-    {
-      title: 'Last Man Standing',
-      icon: User,
-      description: 'The ultimate individual test - run 6.7km every single hour. Pure grit and determination.',
-    },
-    {
-      title: 'Full Pair (24 Hours)',
-      icon: Users,
-      description: 'Tag-team endurance - partners alternate hourly laps across the full 24-hour window. Strategy meets stamina.',
-    },
-    {
-      title: 'Half Solo (12 Hours)',
-      icon: User,
-      description: 'A 12-hour solo gauntlet. The perfect entry point into the world of endurance sport—challenging, relentless, and unforgettable.',
-    },
-    {
-      title: 'Half Pair (12 Hours)',
-      icon: Users,
-      description: 'Twelve hours shared between two. A gateway into endurance sport built on trust, timing, and teamwork.',
-    },
+  const closeDropdown = () => setBbuDropdownOpen(false);
+
+  const BBU_EVENTS = [
+    { label: 'BBU 26.2', date: '26 Sep 2026', past: false },
+    { label: 'BBU 26.1', date: '2 May 2026', past: true },
+    { label: 'BBU 25.1', date: '27 Sep 2025', past: true },
   ];
+
+  useEffect(() => {
+    if (!bbuDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!bbuDropdownRef.current?.contains(e.target as Node)) closeDropdown();
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [bbuDropdownOpen]);
+
 
   return (
     <div className="min-h-screen bg-syncra-black text-syncra-lime">
@@ -63,34 +62,16 @@ export const BBUEvent: React.FC = () => {
             className="bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6"
           >
             <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-white">
-              Boughton <span className="text-syncra-lime">Backyard</span> Ultra
+              <span className="text-syncra-lime">B</span>oughton <span className="text-syncra-lime">B</span>ackyard <span className="text-syncra-lime">U</span>ltra
             </h1>
           </motion.div>
 
-          {/* Location & Date */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col md:flex-row gap-2 sm:gap-3 md:gap-4 justify-center mb-3 sm:mb-4"
-          >
+          {/* Pills */}
+          <div className="flex flex-col md:flex-row gap-2 sm:gap-3 md:gap-4 justify-center">
             <div className="flex items-center gap-2 text-base sm:text-xl md:text-2xl text-white bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-6 py-2">
               <MapPin size={20} className="text-syncra-lime shrink-0" />
-              <span>Boughton Estate, Northamptonshire</span>
+              <span>Northamptonshire</span>
             </div>
-            <div className="flex items-center gap-2 text-base sm:text-xl md:text-2xl text-white bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-6 py-2">
-              <Calendar size={20} className="text-syncra-lime shrink-0" />
-              <span>May 2nd, 2026</span>
-            </div>
-          </motion.div>
-
-          {/* Distance & Terrain */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex flex-col md:flex-row gap-2 sm:gap-3 md:gap-4 justify-center"
-          >
             <div className="bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-6 py-2 flex flex-col sm:flex-row sm:flex-wrap sm:justify-center sm:items-center gap-1">
               <span className="text-xl sm:text-2xl md:text-4xl font-bold text-white">Distance</span>
               <span className="text-base sm:text-xl md:text-2xl text-syncra-lime/90">4.2 mile loop</span>
@@ -99,7 +80,7 @@ export const BBUEvent: React.FC = () => {
               <span className="text-xl sm:text-2xl md:text-4xl font-bold text-white">Terrain</span>
               <span className="text-base sm:text-xl md:text-2xl text-syncra-lime/90">Flat trail with natural obstacles</span>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -123,7 +104,7 @@ export const BBUEvent: React.FC = () => {
       </section>
 
       {/* Find Your Race Link */}
-      <section className="py-12 md:py-16">
+      <section className="pt-0 pb-20 md:pt-1 md:pb-24">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -131,56 +112,42 @@ export const BBUEvent: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.55 }}
             className="text-center"
           >
-            <a
-              href="https://boughtonbackyardultra.co.uk"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-2xl md:text-3xl font-mono uppercase text-syncra-lime underline underline-offset-8 hover:opacity-70 transition-opacity"
-            >
-              Find Your Race
-            </a>
+            <div className="flex flex-col items-center" ref={bbuDropdownRef}>
+              <button
+                onClick={() => bbuDropdownOpen ? closeDropdown() : setBbuDropdownOpen(true)}
+                className="px-10 py-4 bg-syncra-lime text-syncra-black font-mono text-base uppercase tracking-widest rounded-full hover:opacity-90 transition-opacity"
+              >
+                Find Your Race ▾
+              </button>
+              {bbuDropdownOpen && (
+                <div className="mt-2 bg-syncra-black border border-syncra-lime/30 rounded-lg w-[240px] max-h-64 overflow-y-auto divide-y divide-syncra-lime/20">
+                  {BBU_EVENTS.map((event) =>
+                    event.past ? (
+                      <div
+                        key={event.label}
+                        className="w-full text-left px-5 py-4 font-mono text-base text-white opacity-35 cursor-not-allowed select-none"
+                      >
+                        <span className="block text-syncra-lime text-sm tracking-widest uppercase mb-1">{event.label}</span>
+                        {event.date}
+                      </div>
+                    ) : (
+                      <button
+                        key={event.label}
+                        onClick={() => { closeDropdown(); setIsFinderOpen(true); }}
+                        className="w-full text-left px-5 py-4 font-mono text-base text-white hover:bg-syncra-lime/10 transition-colors"
+                      >
+                        <span className="block text-syncra-lime text-sm tracking-widest uppercase mb-1">{event.label}</span>
+                        {event.date}
+                      </button>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Four Categories Section */}
-      <section className="py-16 md:py-24 bg-syncra-black">
-        <div className="container">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-5xl md:text-6xl font-mono uppercase mb-12 text-center"
-          >
-            Four Categories
-          </motion.h2>
-
-          <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
-          {categories.map((category, index) => (
-            <a
-              key={category.title}
-              href="https://boughtonbackyardultra.co.uk"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-                className="border border-syncra-lime/20 rounded-xl p-6 md:p-8 hover:border-syncra-lime/40 hover:bg-syncra-lime/5 transition-colors cursor-pointer h-full"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <category.icon size={32} className="text-syncra-lime" />
-                  <h3 className="text-3xl md:text-4xl font-mono uppercase">{category.title}</h3>
-                </div>
-                <p className="text-xl text-syncra-lime/70 leading-relaxed">{category.description}</p>
-              </motion.div>
-            </a>
-          ))}
-          </div>
-        </div>
-      </section>
 
       {/* Footer Info Section */}
       <section className="py-16 md:py-20 border-t border-syncra-lime/20">
@@ -205,7 +172,7 @@ export const BBUEvent: React.FC = () => {
           <div className="text-center space-y-4 text-lg text-syncra-lime/70">
             <p className="flex items-center justify-center gap-2">
               <MapPin size={20} className="text-syncra-lime" />
-              <span>Boughton Estate, Northamptonshire, UK</span>
+              <span>Northamptonshire, UK</span>
             </p>
             <p>
               Contact:{' '}
@@ -223,6 +190,11 @@ export const BBUEvent: React.FC = () => {
       {/* Modals */}
       <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} />
       <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
+      <RaceFinderModal
+        isOpen={isFinderOpen}
+        onClose={() => setIsFinderOpen(false)}
+        eventLabel="BBU 26.2 — 26 Sep 2026"
+      />
     </div>
   );
 };
