@@ -55,16 +55,11 @@ export const BBUEvent: React.FC = () => {
         {/* Hero Content */}
         <div className="container relative h-full flex flex-col justify-center items-center text-center py-8 md:py-0">
           {/* Main Title */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6"
-          >
+          <div className="bg-black/30 backdrop-blur-sm rounded-lg px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6">
             <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-white">
               <span className="text-syncra-lime">B</span>oughton <span className="text-syncra-lime">B</span>ackyard <span className="text-syncra-lime">U</span>ltra
             </h1>
-          </motion.div>
+          </div>
 
           {/* Pills */}
           <div className="flex flex-col md:flex-row md:flex-wrap gap-2 sm:gap-3 md:gap-4 justify-center">
