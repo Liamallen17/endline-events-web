@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* Custom theme */
 @theme {
   --font-mono: "Space Mono", monospace;

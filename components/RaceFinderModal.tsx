@@ -391,27 +391,26 @@ function CheckoutScreen({
               <span className="block font-mono text-xs tracking-widest text-white/60 uppercase mb-1">
                 Sex
               </span>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex gap-3">
                 {(["male", "female"] as const).map((s) => (
-                  <div key={s} className="min-w-0">
-                    <label
-                      className={`flex items-center justify-center px-3 py-3 border rounded cursor-pointer font-mono text-sm transition-colors w-full ${
-                        athlete.sex === s
-                          ? "border-syncra-lime text-syncra-lime"
-                          : "border-syncra-gray text-white"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name={`sex-athlete-${athleteNumber}`}
-                        value={s}
-                        checked={athlete.sex === s}
-                        onChange={() => update("sex", s)}
-                        className="sr-only"
-                      />
-                      {s.charAt(0).toUpperCase() + s.slice(1)}
-                    </label>
-                  </div>
+                  <label
+                    key={s}
+                    className={`flex-1 min-w-0 flex items-center justify-center px-3 py-3 border rounded cursor-pointer font-mono text-sm transition-colors ${
+                      athlete.sex === s
+                        ? "border-syncra-lime text-syncra-lime"
+                        : "border-syncra-gray text-white"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`sex-athlete-${athleteNumber}`}
+                      value={s}
+                      checked={athlete.sex === s}
+                      onChange={() => update("sex", s)}
+                      className="sr-only"
+                    />
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </label>
                 ))}
               </div>
             </div>
