@@ -122,13 +122,22 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      return () => {
+        const top = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        window.scrollTo(0, parseInt(top || '0') * -1);
+      };
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -224,7 +233,7 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
           <div className="w-12" />
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
           {screen === "categories" && (
             <CategoriesScreen onSelect={handleCategorySelect} />
           )}
@@ -384,24 +393,25 @@ function CheckoutScreen({
               </span>
               <div className="grid grid-cols-2 gap-3">
                 {(["male", "female"] as const).map((s) => (
-                  <label
-                    key={s}
-                    className={`flex items-center justify-center px-3 py-3 border rounded cursor-pointer font-mono text-sm transition-colors ${
-                      athlete.sex === s
-                        ? "border-syncra-lime text-syncra-lime"
-                        : "border-syncra-gray text-white"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name={`sex-athlete-${athleteNumber}`}
-                      value={s}
-                      checked={athlete.sex === s}
-                      onChange={() => update("sex", s)}
-                      className="sr-only"
-                    />
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
-                  </label>
+                  <div key={s} className="min-w-0">
+                    <label
+                      className={`flex items-center justify-center px-3 py-3 border rounded cursor-pointer font-mono text-sm transition-colors w-full ${
+                        athlete.sex === s
+                          ? "border-syncra-lime text-syncra-lime"
+                          : "border-syncra-gray text-white"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name={`sex-athlete-${athleteNumber}`}
+                        value={s}
+                        checked={athlete.sex === s}
+                        onChange={() => update("sex", s)}
+                        className="sr-only"
+                      />
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </label>
+                  </div>
                 ))}
               </div>
             </div>
