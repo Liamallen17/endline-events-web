@@ -28,6 +28,8 @@ interface AthleteDetails {
   email: string;
   phone: string;
   dateOfBirth: string;
+  sex: "male" | "female" | "";
+  runningClub: string;
 }
 
 export const CATEGORIES: Category[] = [
@@ -89,6 +91,8 @@ const emptyAthlete: AthleteDetails = {
   email: "",
   phone: "",
   dateOfBirth: "",
+  sex: "",
+  runningClub: "",
 };
 
 export default function RaceFinderModal({ isOpen, onClose, initialCategory, eventLabel }: Props) {
@@ -169,7 +173,7 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
   const setCurrentAthlete = athleteStep === 1 ? setAthlete1 : setAthlete2;
 
   const isAthleteFormValid = (a: AthleteDetails) =>
-    a.firstName && a.lastName && a.email && a.phone && a.dateOfBirth;
+    a.firstName && a.lastName && a.email && a.phone && a.dateOfBirth && Boolean(a.sex);
 
   const isSpectatorFormValid = (a: AthleteDetails) =>
     Boolean(a.firstName && a.lastName && a.email && a.phone);
@@ -346,16 +350,20 @@ function CheckoutScreen({
         </h3>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field
-              label="First Name"
-              value={athlete.firstName}
-              onChange={(v) => update("firstName", v)}
-            />
-            <Field
-              label="Last Name"
-              value={athlete.lastName}
-              onChange={(v) => update("lastName", v)}
-            />
+            <div className="min-w-0">
+              <Field
+                label="First Name"
+                value={athlete.firstName}
+                onChange={(v) => update("firstName", v)}
+              />
+            </div>
+            <div className="min-w-0">
+              <Field
+                label="Last Name"
+                value={athlete.lastName}
+                onChange={(v) => update("lastName", v)}
+              />
+            </div>
           </div>
           <Field
             label="Email"
@@ -370,11 +378,48 @@ function CheckoutScreen({
             onChange={(v) => update("phone", v)}
           />
           {!category.isSpectator && (
+            <div>
+              <span className="block font-mono text-xs tracking-widest text-white/60 uppercase mb-1">
+                Sex
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                {(["male", "female"] as const).map((s) => (
+                  <label
+                    key={s}
+                    className={`flex items-center justify-center px-3 py-3 border rounded cursor-pointer font-mono text-sm transition-colors ${
+                      athlete.sex === s
+                        ? "border-syncra-lime text-syncra-lime"
+                        : "border-syncra-gray text-white"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`sex-athlete-${athleteNumber}`}
+                      value={s}
+                      checked={athlete.sex === s}
+                      onChange={() => update("sex", s)}
+                      className="sr-only"
+                    />
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+          {!category.isSpectator && (
             <Field
               label="Date of Birth"
               type="date"
               value={athlete.dateOfBirth}
               onChange={(v) => update("dateOfBirth", v)}
+            />
+          )}
+          {!category.isSpectator && (
+            <Field
+              label="Running Club"
+              value={athlete.runningClub}
+              onChange={(v) => update("runningClub", v)}
+              placeholder="Optional"
             />
           )}
         </div>

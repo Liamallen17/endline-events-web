@@ -33,7 +33,7 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 py-6 md:py-8 bg-syncra-black/90 backdrop-blur-sm">
-        <div className="container flex items-start justify-between">
+        <div className="container flex items-center justify-between">
           {/* Logo Text - Links back to home */}
           <Link
             to="/"
@@ -46,7 +46,7 @@ export const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center gap-12">
             {/* OUR EVENTS Dropdown */}
             <div 
-              className="relative pt-2"
+              className="relative"
               onMouseEnter={() => setDropdownOpen(true)}
               onMouseLeave={() => setDropdownOpen(false)}
             >

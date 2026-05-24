@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export const ScrollToTop = () => {
@@ -8,7 +8,7 @@ export const ScrollToTop = () => {
     window.history.scrollRestoration = 'manual';
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
