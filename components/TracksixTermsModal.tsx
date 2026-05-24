@@ -42,7 +42,7 @@ export const TracksixTermsModal: React.FC<TracksixTermsModalProps> = ({ isOpen, 
               <h3 className="text-xl font-mono uppercase mb-4 accent-blue">Entry & Registration</h3>
               <ul className="space-y-3 list-disc list-inside text-white/80">
                 <li>All participants must be 18 years of age or older on race day</li>
-                <li>Teams must register as a complete group of 4-6 runners</li>
+                <li>Teams must register as a complete group of 4 runners</li>
                 <li>Entry fees are non-refundable and non-transferable</li>
                 <li>Team captain is responsible for all team member registrations</li>
                 <li>All participants must complete the online registration and waiver forms</li>

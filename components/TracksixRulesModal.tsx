@@ -49,7 +49,7 @@ export const TracksixRulesModal: React.FC<TracksixRulesModalProps> = ({ isOpen, 
             <section>
               <h3 className="text-xl font-mono uppercase mb-4 accent-blue">Team Rules</h3>
               <ul className="space-y-3 list-disc list-inside text-white/80">
-                <li>Teams must consist of 4-6 runners</li>
+                <li>Teams must consist of 4 runners</li>
                 <li>All team members must be registered before the event</li>
                 <li>Team captains are responsible for coordinating rotations</li>
                 <li>Substitutions are not permitted after registration closes</li>
@@ -73,12 +73,8 @@ export const TracksixRulesModal: React.FC<TracksixRulesModalProps> = ({ isOpen, 
               <h3 className="text-xl font-mono uppercase mb-4 accent-blue">Scoring</h3>
               <div className="space-y-4 text-white/80">
                 <div>
-                  <strong className="accent-purple">Winning Team (4 Runners):</strong>
+                  <strong className="accent-purple">Winning Team:</strong>
                   <p className="mt-1">The 4-person team with the most total laps completed wins.</p>
-                </div>
-                <div>
-                  <strong className="accent-purple">Winning Team (6 Runners):</strong>
-                  <p className="mt-1">The 6-person team with the most total laps completed wins.</p>
                 </div>
                 <div>
                   <strong className="accent-purple">Fastest Mile:</strong>
