@@ -194,6 +194,27 @@ Stripe is the source of truth for products and prices. The link to an event is c
    ```
    The script lists all products and prices via the Stripe API and upserts them. Re-runnable; idempotent via `ON CONFLICT DO UPDATE`. Ongoing changes after this initial sync flow in through the webhook.
 
+## Importing historical race data
+
+For races that ran on the previous Firebase + Stripe setup, the canonical attendee export from the old `boughton-ultra` repo (`scripts/export-attendees-with-stripe.js` → `attendees-with-payments-YYYY-MM-DD.csv`) can be imported with:
+
+```bash
+npm run import:csv:local -- \
+  --csv=../../boughton-ultra/attendees-with-payments-2026-04-26.csv \
+  --event-slug=bbu-26-1 \
+  --event-name="BBU 26.1" \
+  --event-date=2026-05-02
+```
+
+The script:
+- Auto-creates the event row if it doesn't exist (with `is_published=1` and a sentinel `stripe_price_id='historical'` to satisfy the legacy NOT NULL column).
+- Uses the Stripe `sessionId` from the CSV as the team's primary key, which makes re-runs idempotent without needing a lookup.
+- Inserts athletes with `OR IGNORE` so importing old data never overwrites fresher athlete records from real registrations.
+- Leaves `teams.stripe_price_id` NULL — the CSV doesn't carry which price category was paid for, so the per-team category isn't recovered. Roster lookups still work.
+- Skips rows with no Stripe sessionId (Firebase-only registrations that never paid).
+
+Replace `--local` with `--remote` to import into production D1.
+
 ## Frontend Integration
 
 Replace the Firebase registration form with a simple fetch:
