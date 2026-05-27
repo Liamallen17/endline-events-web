@@ -79,27 +79,8 @@ export const BBUEvent: React.FC = () => {
         </div>
       </div>
 
-      {/* Course Description Section */}
-      <section className="py-16 md:py-24">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="max-w-4xl mx-auto text-center"
-          >
-          <h2 className="text-4xl md:text-5xl font-mono uppercase mb-8">
-            A Fast & Exciting Woodland Loop
-          </h2>
-          <p className="text-xl md:text-2xl text-syncra-lime/80 leading-relaxed">
-            A flat, fast 4.2-mile (6.7km) loop through Boughton Estate. The course runs through woodland and across a former WWII airfield, following historic runways within a working rural landscape. Designed for speed, with light natural obstacles and minimal elevation change to maintain rhythm and efficiency. The mix of forestry trail and open terrain provides consistent pacing while requiring focus throughout each lap.
-          </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Find Your Race Link */}
-      <section className="pt-0 pb-20 md:pt-1 md:pb-24">
+      {/* Book Now Button */}
+      <section className="pt-16 pb-8 md:pt-24 md:pb-8">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -112,7 +93,7 @@ export const BBUEvent: React.FC = () => {
                 onClick={() => bbuDropdownOpen ? closeDropdown() : setBbuDropdownOpen(true)}
                 className="px-10 py-4 bg-syncra-lime text-syncra-black font-mono text-base uppercase tracking-widest rounded-full hover:opacity-90 transition-opacity"
               >
-                Find Your Race ▾
+                BOOK NOW ▾
               </button>
               {bbuDropdownOpen && (
                 <div className="mt-2 bg-syncra-black border border-syncra-lime/30 rounded-lg w-[240px] max-h-64 overflow-y-auto divide-y divide-syncra-lime/20">
@@ -143,6 +124,24 @@ export const BBUEvent: React.FC = () => {
         </div>
       </section>
 
+      {/* Course Description Section */}
+      <section className="py-16 md:py-24">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="max-w-4xl mx-auto text-center"
+          >
+          <h2 className="text-4xl md:text-5xl font-mono uppercase mb-8">
+            A Fast & Exciting Woodland Loop
+          </h2>
+          <p className="text-xl md:text-2xl text-syncra-lime/80 leading-relaxed">
+            A flat, fast 4.2-mile (6.7km) loop through Boughton Estate. The course runs through woodland and across a former WWII airfield, following historic runways within a working rural landscape. Designed for speed, with light natural obstacles and minimal elevation change to maintain rhythm and efficiency. The mix of forestry trail and open terrain provides consistent pacing while requiring focus throughout each lap.
+          </p>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Footer Info Section */}
       <section className="py-16 md:py-20 border-t border-syncra-lime/20">
