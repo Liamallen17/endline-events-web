@@ -95,6 +95,15 @@ const emptyAthlete: AthleteDetails = {
   runningClub: "",
 };
 
+const PRICE_IDS: Record<string, string> = {
+  'Last Man Standing': 'price_1TbciEAJDn7e8QysPkO7kXrJ',
+  '12 Hour Solo':      'price_1TbckZAJDn7e8QysedWwgjtR',
+  '12 Hour Pairs':     'price_1Tbcl6AJDn7e8QysuatnP57c',
+  '24 Hour Pairs':     'price_1Tbck1AJDn7e8QysMlN97fb3',
+  'Spectator Pass':    'price_1TbcmdAJDn7e8QysUINpGdSJ',
+  'Campervan':         'price_1TbcnmAJDn7e8Qysq4pOM8nO',
+};
+
 export default function RaceFinderModal({ isOpen, onClose, initialCategory, eventLabel }: Props) {
   const [screen, setScreen] = useState<Screen>("categories");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -103,6 +112,8 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
   const [athlete2, setAthlete2] = useState<AthleteDetails>(emptyAthlete);
   const [campervan, setCampervan] = useState(false);
   const [vehicleReg, setVehicleReg] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -154,6 +165,7 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
 
   const handleBack = () => {
     if (screen === "checkout") {
+      setCheckoutError(null);
       if (selectedCategory?.isPair && athleteStep === 2) {
         setAthleteStep(1);
       } else {
@@ -163,19 +175,61 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (selectedCategory?.isPair && athleteStep === 1) {
       setAthleteStep(2);
       return;
     }
+
+    if (!selectedCategory) return;
+
+    const isAthlete = !selectedCategory.isSpectator;
+    const isPairs = selectedCategory.isPair;
+
     const payload = {
-      category: selectedCategory,
-      athletes: selectedCategory?.isPair ? [athlete1, athlete2] : [athlete1],
-      campervan: campervan ? { vehicleReg } : null,
-      total,
+      lineItems: [
+        { price: PRICE_IDS[selectedCategory.name], quantity: 1 },
+        ...(campervan ? [{ price: PRICE_IDS['Campervan'], quantity: 1 }] : []),
+      ],
+      metadata: {
+        category: selectedCategory.name,
+        campervan,
+        firstName: athlete1.firstName,
+        lastName: athlete1.lastName,
+        email: athlete1.email,
+        phone: athlete1.phone,
+        ...(isAthlete ? { sex: athlete1.sex, dob: athlete1.dateOfBirth, runningClub: athlete1.runningClub } : {}),
+        ...(isPairs ? {
+          partner_firstName: athlete2.firstName,
+          partner_lastName: athlete2.lastName,
+          partner_email: athlete2.email,
+          partner_sex: athlete2.sex,
+          partner_dob: athlete2.dateOfBirth,
+          partner_runningClub: athlete2.runningClub,
+        } : {}),
+        ...(campervan ? { vehicleReg } : {}),
+      },
     };
-    console.log("[RaceFinderModal] Checkout payload — wire to Stripe here:", payload);
-    alert("Stripe checkout will be wired here. Payload logged to console.");
+
+    setIsLoading(true);
+    setCheckoutError(null);
+
+    try {
+      // TODO: replace ENGINEER_ENDPOINT_URL with the Cloudflare Worker endpoint
+      const response = await fetch('ENGINEER_ENDPOINT_URL/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error('Non-2xx response');
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch {
+      setCheckoutError('Something went wrong — please try again.');
+      setIsLoading(false);
+    }
   };
 
   const currentAthlete = athleteStep === 1 ? athlete1 : athlete2;
@@ -262,12 +316,17 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
                 £{total.toFixed(total % 1 === 0 ? 0 : 2)}
               </span>
             </div>
+            {checkoutError && (
+              <p className="font-mono text-xs text-red-400 mb-3">{checkoutError}</p>
+            )}
             <button
               onClick={handleContinue}
-              disabled={!canContinue}
+              disabled={!canContinue || isLoading}
               className="w-full py-4 font-mono text-sm tracking-widest uppercase bg-syncra-lime text-syncra-black disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
             >
-              {selectedCategory.isPair && athleteStep === 1
+              {isLoading
+                ? "Processing…"
+                : selectedCategory.isPair && athleteStep === 1
                 ? "Continue to Athlete 2 →"
                 : "Continue to Payment →"}
             </button>
