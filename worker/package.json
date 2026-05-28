@@ -13,6 +13,8 @@
     "sync:stripe:remote": "tsx scripts/sync-stripe.ts --remote",
     "import:csv:local": "tsx scripts/import-csv.ts --local",
     "import:csv:remote": "tsx scripts/import-csv.ts --remote",
+    "create-event:local": "tsx scripts/create-event.ts --local",
+    "create-event:remote": "tsx scripts/create-event.ts --remote",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts"
   },
