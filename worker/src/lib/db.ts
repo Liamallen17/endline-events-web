@@ -8,7 +8,19 @@ import type {
   StripePriceRow,
   StripeProductInput,
   StripePriceInput,
+  SpectatorPassRow,
+  SpectatorPassInput,
 } from '../types';
+
+// athletes.name is NOT NULL and historically the only name field, so for the
+// new firstName/lastName-style payloads we derive it as "first last". Validation
+// upstream guarantees that at least one of these forms is present.
+function resolveAthleteName(athlete: AthleteInput): string {
+  if (athlete.name && athlete.name.trim()) return athlete.name.trim();
+  const first = athlete.firstName?.trim() ?? '';
+  const last = athlete.lastName?.trim() ?? '';
+  return `${first} ${last}`.trim();
+}
 
 export class Database {
   constructor(private db: D1Database) {}
@@ -42,17 +54,31 @@ export class Database {
 
   async upsertAthlete(athlete: AthleteInput): Promise<void> {
     const email = athlete.email.toLowerCase().trim();
+    const name = resolveAthleteName(athlete);
     await this.db
       .prepare(`
-        INSERT INTO athletes (email, name, gender, run_club)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO athletes (email, name, first_name, last_name, phone, date_of_birth, gender, run_club)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(email) DO UPDATE SET
           name = excluded.name,
+          first_name = COALESCE(excluded.first_name, athletes.first_name),
+          last_name = COALESCE(excluded.last_name, athletes.last_name),
+          phone = COALESCE(excluded.phone, athletes.phone),
+          date_of_birth = COALESCE(excluded.date_of_birth, athletes.date_of_birth),
           gender = excluded.gender,
           run_club = excluded.run_club,
           updated_at = datetime('now')
       `)
-      .bind(email, athlete.name, athlete.gender ?? null, athlete.runClub ?? null)
+      .bind(
+        email,
+        name,
+        athlete.firstName ?? null,
+        athlete.lastName ?? null,
+        athlete.phone ?? null,
+        athlete.dateOfBirth ?? null,
+        athlete.gender ?? null,
+        athlete.runClub ?? null
+      )
       .run();
   }
 
@@ -304,50 +330,136 @@ export class Database {
   }
 
   // Batch operations for atomic team creation
-  async createTeamWithMembers(
-    teamId: string,
-    eventId: string,
-    priceId: string,
-    teamName: string | undefined,
-    athletes: AthleteInput[]
-  ): Promise<void> {
+  async createTeamWithMembers(opts: {
+    teamId: string;
+    eventId: string;
+    priceId: string;
+    teamName?: string;
+    vehicleReg?: string;
+    athletes: AthleteInput[];
+  }): Promise<void> {
     const statements: D1PreparedStatement[] = [];
 
     // Upsert all athletes
-    for (const athlete of athletes) {
+    for (const athlete of opts.athletes) {
       const email = athlete.email.toLowerCase().trim();
+      const name = resolveAthleteName(athlete);
       statements.push(
         this.db
           .prepare(`
-            INSERT INTO athletes (email, name, gender, run_club)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO athletes (email, name, first_name, last_name, phone, date_of_birth, gender, run_club)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(email) DO UPDATE SET
               name = excluded.name,
+              first_name = COALESCE(excluded.first_name, athletes.first_name),
+              last_name = COALESCE(excluded.last_name, athletes.last_name),
+              phone = COALESCE(excluded.phone, athletes.phone),
+              date_of_birth = COALESCE(excluded.date_of_birth, athletes.date_of_birth),
               gender = excluded.gender,
               run_club = excluded.run_club,
               updated_at = datetime('now')
           `)
-          .bind(email, athlete.name, athlete.gender ?? null, athlete.runClub ?? null)
+          .bind(
+            email,
+            name,
+            athlete.firstName ?? null,
+            athlete.lastName ?? null,
+            athlete.phone ?? null,
+            athlete.dateOfBirth ?? null,
+            athlete.gender ?? null,
+            athlete.runClub ?? null
+          )
       );
     }
 
-    // Create team with both event and price linkage
+    // Create team with both event and price linkage; vehicle_reg is set when
+    // the campervan add-on is part of the registration.
     statements.push(
       this.db
-        .prepare('INSERT INTO teams (id, event_id, stripe_price_id, name) VALUES (?, ?, ?, ?)')
-        .bind(teamId, eventId, priceId, teamName ?? null)
+        .prepare('INSERT INTO teams (id, event_id, stripe_price_id, name, vehicle_reg) VALUES (?, ?, ?, ?, ?)')
+        .bind(opts.teamId, opts.eventId, opts.priceId, opts.teamName ?? null, opts.vehicleReg ?? null)
     );
 
     // Add all team members
-    for (const athlete of athletes) {
+    for (const athlete of opts.athletes) {
       const email = athlete.email.toLowerCase().trim();
       statements.push(
         this.db
           .prepare('INSERT INTO team_members (team_id, athlete_email, role) VALUES (?, ?, ?)')
-          .bind(teamId, email, athlete.isCaptain ? 'captain' : 'member')
+          .bind(opts.teamId, email, athlete.isCaptain ? 'captain' : 'member')
       );
     }
 
     await this.db.batch(statements);
+  }
+
+  // Spectator passes — separate model from teams since spectators don't race,
+  // don't form teams, and only collect contact info (no gender/dob/run_club).
+  async getSpectatorPass(id: string): Promise<SpectatorPassRow | null> {
+    return this.db
+      .prepare('SELECT * FROM spectator_passes WHERE id = ?')
+      .bind(id)
+      .first<SpectatorPassRow>();
+  }
+
+  async getSpectatorPassByStripeSession(sessionId: string): Promise<SpectatorPassRow | null> {
+    return this.db
+      .prepare('SELECT * FROM spectator_passes WHERE stripe_session_id = ?')
+      .bind(sessionId)
+      .first<SpectatorPassRow>();
+  }
+
+  async createSpectatorPass(opts: {
+    passId: string;
+    eventId: string;
+    priceId: string;
+    spectator: SpectatorPassInput;
+    vehicleReg?: string;
+  }): Promise<void> {
+    await this.db
+      .prepare(`
+        INSERT INTO spectator_passes
+          (id, event_id, stripe_price_id, first_name, last_name, email, phone, vehicle_reg)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `)
+      .bind(
+        opts.passId,
+        opts.eventId,
+        opts.priceId,
+        opts.spectator.firstName.trim(),
+        opts.spectator.lastName.trim(),
+        opts.spectator.email.toLowerCase().trim(),
+        opts.spectator.phone?.trim() ?? null,
+        opts.vehicleReg?.trim() ?? null
+      )
+      .run();
+  }
+
+  async updateSpectatorPassStripeSession(passId: string, sessionId: string): Promise<void> {
+    await this.db
+      .prepare('UPDATE spectator_passes SET stripe_session_id = ? WHERE id = ?')
+      .bind(sessionId, passId)
+      .run();
+  }
+
+  async markSpectatorPassPaid(passId: string): Promise<void> {
+    await this.db
+      .prepare(`UPDATE spectator_passes SET payment_status = 'paid', paid_at = datetime('now') WHERE id = ?`)
+      .bind(passId)
+      .run();
+  }
+
+  async markSpectatorPassFailed(passId: string): Promise<void> {
+    await this.db
+      .prepare(`UPDATE spectator_passes SET payment_status = 'failed' WHERE id = ?`)
+      .bind(passId)
+      .run();
+  }
+
+  async markSpectatorPassRefunded(passId: string): Promise<void> {
+    await this.db
+      .prepare(`UPDATE spectator_passes SET payment_status = 'refunded' WHERE id = ?`)
+      .bind(passId)
+      .run();
   }
 }

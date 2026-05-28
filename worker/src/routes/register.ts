@@ -75,7 +75,13 @@ register.post('/', async (c) => {
 
     // Create team and members atomically (athletes upserted, team created, members linked)
     const teamId = crypto.randomUUID();
-    await db.createTeamWithMembers(teamId, event.id, price.id, teamName, athletesWithCaptain);
+    await db.createTeamWithMembers({
+      teamId,
+      eventId: event.id,
+      priceId: price.id,
+      teamName,
+      athletes: athletesWithCaptain,
+    });
 
     // Open Stripe checkout for the specific price the team picked
     const session = await createCheckoutSession(stripe, {
