@@ -187,6 +187,7 @@ export const BBUEvent: React.FC = () => {
       <RaceFinderModal
         isOpen={isFinderOpen}
         onClose={() => setIsFinderOpen(false)}
+        eventSlug="bbu-26-2"
         eventLabel="BBU 26.2 — 26 Sep 2026"
       />
     </div>

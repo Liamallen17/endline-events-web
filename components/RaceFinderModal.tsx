@@ -4,23 +4,11 @@ import { User, Users } from "lucide-react";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  initialCategory?: Category;
+  eventSlug: string;
   eventLabel?: string;
 }
 
 type Screen = "categories" | "checkout";
-
-export interface Category {
-  id: string;
-  name: string;
-  subtitle: string;
-  description: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  price: number;
-  perPerson?: number;
-  isPair: boolean;
-  isSpectator?: boolean;
-}
 
 interface AthleteDetails {
   firstName: string;
@@ -32,58 +20,97 @@ interface AthleteDetails {
   runningClub: string;
 }
 
-export const CATEGORIES: Category[] = [
-  {
-    id: "last-man-standing",
-    name: "Last Man Standing",
+// Comes from GET /api/events/:slug — see worker/src/routes/events.ts
+interface ApiPrice {
+  id: string;
+  productId: string;
+  nickname: string | null;
+  unitAmount: number | null;
+  currency: string;
+  minTeamSize: number | null;
+  maxTeamSize: number | null;
+  addonType: string | null;
+}
+
+interface ApiEvent {
+  id: string;
+  name: string;
+  eventDate: string | null;
+  registrationOpen: boolean;
+  athletePrices: ApiPrice[];
+  addOnPrices: ApiPrice[];
+  spectatorPrices: ApiPrice[];
+}
+
+// A price after we've merged it with the static presentation (icon + description)
+// that lives in this file. Stripe owns id/name/amount/team-size; the frontend
+// owns the marketing copy that wouldn't fit cleanly in a Stripe nickname.
+interface Category {
+  price: ApiPrice;
+  name: string;
+  subtitle: string;
+  description: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  isPair: boolean;
+  isSpectator: boolean;
+}
+
+// Presentation keyed by Stripe price nickname. Anything not in this map
+// renders with a fallback (nickname only, generic icon) so the admin can add
+// a new category in Stripe without the page going blank.
+interface Presentation {
+  subtitle: string;
+  description: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}
+
+const CATEGORY_PRESENTATION: Record<string, Presentation> = {
+  "Last Man Standing": {
     subtitle: "Individual Entry",
     description: "The ultimate individual test — run 6.7km every single hour. Pure grit and determination.",
     icon: User,
-    price: 95,
-    isPair: false,
   },
-  {
-    id: "24-hour-pairs",
-    name: "24 Hour Pairs",
+  "24 Hour Pairs": {
     subtitle: "Team Entry",
     description: "Tag-team endurance — partners alternate hourly laps across the full 24-hour window. Strategy meets stamina.",
     icon: Users,
-    price: 105,
-    perPerson: 52.5,
-    isPair: true,
   },
-  {
-    id: "12-hour-solo",
-    name: "12 Hour Solo",
+  "12 Hour Solo": {
     subtitle: "Individual 12-Hour Challenge",
     description: "A 12-hour solo gauntlet. The perfect entry point into the world of endurance sport — challenging, relentless, and unforgettable.",
     icon: User,
-    price: 70,
-    isPair: false,
   },
-  {
-    id: "12-hour-pairs",
-    name: "12 Hour Pairs",
+  "12 Hour Pairs": {
     subtitle: "Team Entry 12-Hour Challenge",
     description: "Twelve hours shared between two. A gateway into endurance sport built on trust, timing, and teamwork.",
     icon: Users,
-    price: 80,
-    perPerson: 40,
-    isPair: true,
   },
-  {
-    id: "spectator",
-    name: "Spectator Pass",
+  "Spectator Pass": {
     subtitle: "Helps us understand who is on-site",
     description: "Support the event — access to the venue and finish line area. One pass per named person.",
     icon: User,
-    price: 2,
-    isPair: false,
-    isSpectator: true,
   },
-];
+};
 
-const CAMPERVAN_PRICE = 15;
+const FALLBACK_PRESENTATION: Presentation = {
+  subtitle: "Entry",
+  description: "",
+  icon: User,
+};
+
+function buildCategory(price: ApiPrice, kind: "athlete" | "spectator"): Category {
+  const presentation = (price.nickname && CATEGORY_PRESENTATION[price.nickname]) ?? FALLBACK_PRESENTATION;
+  const max = price.maxTeamSize ?? 1;
+  return {
+    price,
+    name: price.nickname ?? "Entry",
+    subtitle: presentation.subtitle,
+    description: presentation.description,
+    icon: presentation.icon,
+    isPair: kind === "athlete" && max >= 2,
+    isSpectator: kind === "spectator",
+  };
+}
 
 const emptyAthlete: AthleteDetails = {
   firstName: "",
@@ -95,16 +122,19 @@ const emptyAthlete: AthleteDetails = {
   runningClub: "",
 };
 
-const PRICE_IDS: Record<string, string> = {
-  'Last Man Standing': 'price_1TbciEAJDn7e8QysPkO7kXrJ',
-  '12 Hour Solo':      'price_1TbckZAJDn7e8QysedWwgjtR',
-  '12 Hour Pairs':     'price_1Tbcl6AJDn7e8QysuatnP57c',
-  '24 Hour Pairs':     'price_1Tbck1AJDn7e8QysMlN97fb3',
-  'Spectator Pass':    'price_1TbcmdAJDn7e8QysUINpGdSJ',
-  'Campervan':         'price_1TbcnmAJDn7e8Qysq4pOM8nO',
-};
+function pounds(unitAmount: number | null): number {
+  return unitAmount == null ? 0 : unitAmount / 100;
+}
 
-export default function RaceFinderModal({ isOpen, onClose, initialCategory, eventLabel }: Props) {
+function formatPounds(amount: number): string {
+  return amount % 1 === 0 ? `${amount.toFixed(0)}` : `${amount.toFixed(2)}`;
+}
+
+export default function RaceFinderModal({ isOpen, onClose, eventSlug, eventLabel }: Props) {
+  const [event, setEvent] = useState<ApiEvent | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoadingEvent, setIsLoadingEvent] = useState(false);
+
   const [screen, setScreen] = useState<Screen>("categories");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [athleteStep, setAthleteStep] = useState<1 | 2>(1);
@@ -115,10 +145,40 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
   const [isLoading, setIsLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
+  // Fetch the event + prices when the modal opens. Re-fetches if eventSlug
+  // changes between opens, but not on every render.
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    setIsLoadingEvent(true);
+    setLoadError(null);
+    fetch(`/api/events/${encodeURIComponent(eventSlug)}`)
+      .then(async (r) => {
+        if (!r.ok) {
+          const data = (await r.json().catch(() => ({}))) as { error?: string };
+          throw new Error(data.error ?? "Could not load event.");
+        }
+        return (await r.json()) as ApiEvent;
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setEvent(data);
+        setIsLoadingEvent(false);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setLoadError(err instanceof Error ? err.message : "Could not load event.");
+        setIsLoadingEvent(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, eventSlug]);
+
   useEffect(() => {
     if (isOpen) {
-      setScreen(initialCategory ? "checkout" : "categories");
-      setSelectedCategory(initialCategory ?? null);
+      setScreen("categories");
+      setSelectedCategory(null);
       setAthleteStep(1);
     } else {
       const timeout = setTimeout(() => {
@@ -126,10 +186,11 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
         setAthlete2(emptyAthlete);
         setCampervan(false);
         setVehicleReg("");
+        setCheckoutError(null);
       }, 200);
       return () => clearTimeout(timeout);
     }
-  }, [isOpen, initialCategory]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -153,9 +214,20 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
 
   if (!isOpen) return null;
 
-  const total = selectedCategory
-    ? selectedCategory.price + (campervan ? CAMPERVAN_PRICE : 0)
-    : 0;
+  const categories: Category[] = event
+    ? [
+        ...event.athletePrices.map((p) => buildCategory(p, "athlete")),
+        ...event.spectatorPrices.map((p) => buildCategory(p, "spectator")),
+      ]
+    : [];
+
+  // Pick the first campervan add-on if Stripe has one for this event.
+  // If there's no campervan price we hide the toggle entirely.
+  const campervanPrice = event?.addOnPrices.find((p) => p.addonType === "campervan") ?? null;
+
+  const categoryUnitPounds = selectedCategory ? pounds(selectedCategory.price.unitAmount) : 0;
+  const campervanPounds = campervanPrice ? pounds(campervanPrice.unitAmount) : 0;
+  const total = categoryUnitPounds + (campervan ? campervanPounds : 0);
 
   const handleCategorySelect = (category: Category) => {
     setSelectedCategory(category);
@@ -183,15 +255,8 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
 
     if (!selectedCategory) return;
 
-    const priceId = PRICE_IDS[selectedCategory.name];
-    if (!priceId) {
-      setCheckoutError('Price not configured for this category.');
-      return;
-    }
-
-    const campervanPriceId = PRICE_IDS['Campervan'];
-    const addOns = campervan && campervanPriceId
-      ? [{ priceId: campervanPriceId, quantity: 1 }]
+    const addOns = campervan && campervanPrice
+      ? [{ priceId: campervanPrice.id, quantity: 1 }]
       : undefined;
     const vehicle = campervan ? vehicleReg.trim() || undefined : undefined;
 
@@ -201,7 +266,7 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
     if (selectedCategory.isSpectator) {
       endpoint = '/api/spectator-checkout';
       payload = {
-        priceId,
+        priceId: selectedCategory.price.id,
         spectator: {
           firstName: athlete1.firstName.trim(),
           lastName: athlete1.lastName.trim(),
@@ -224,7 +289,7 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
         isCaptain,
       });
       payload = {
-        priceId,
+        priceId: selectedCategory.price.id,
         athletes: selectedCategory.isPair
           ? [toAthlete(athlete1, true), toAthlete(athlete2, false)]
           : [toAthlete(athlete1, true)],
@@ -314,7 +379,13 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
 
         <div className="flex-1 overflow-y-auto overscroll-contain">
           {screen === "categories" && (
-            <CategoriesScreen onSelect={handleCategorySelect} />
+            <CategoriesScreen
+              categories={categories}
+              isLoading={isLoadingEvent}
+              loadError={loadError}
+              registrationOpen={event?.registrationOpen ?? true}
+              onSelect={handleCategorySelect}
+            />
           )}
           {screen === "checkout" && selectedCategory && (
             <CheckoutScreen
@@ -326,6 +397,7 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
               setCampervan={setCampervan}
               vehicleReg={vehicleReg}
               setVehicleReg={setVehicleReg}
+              campervanPrice={campervanPrice}
               showExtras={!selectedCategory.isPair || athleteStep === 2}
             />
           )}
@@ -338,7 +410,7 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
                 Total
               </span>
               <span className="font-display text-2xl text-white">
-                £{total.toFixed(total % 1 === 0 ? 0 : 2)}
+                £{formatPounds(total)}
               </span>
             </div>
             {checkoutError && (
@@ -363,37 +435,75 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
 }
 
 interface CategoriesScreenProps {
+  categories: Category[];
+  isLoading: boolean;
+  loadError: string | null;
+  registrationOpen: boolean;
   onSelect: (category: Category) => void;
 }
 
-function CategoriesScreen({ onSelect }: CategoriesScreenProps) {
+function CategoriesScreen({ categories, isLoading, loadError, registrationOpen, onSelect }: CategoriesScreenProps) {
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center font-mono text-sm text-syncra-lime/70 uppercase tracking-widest">
+        Loading categories…
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="p-8 text-center font-mono text-sm text-red-400">
+        {loadError}
+      </div>
+    );
+  }
+  if (!registrationOpen) {
+    return (
+      <div className="p-8 text-center font-mono text-sm text-syncra-lime/70 uppercase tracking-widest">
+        Registration is not currently open for this event.
+      </div>
+    );
+  }
+  if (categories.length === 0) {
+    return (
+      <div className="p-8 text-center font-mono text-sm text-syncra-lime/70 uppercase tracking-widest">
+        No categories available yet.
+      </div>
+    );
+  }
   return (
     <div className="p-4 space-y-3">
-      {CATEGORIES.map((category) => (
-        <button
-          key={category.id}
-          onClick={() => onSelect(category)}
-          className="w-full text-left p-5 border border-syncra-lime/20 rounded-xl hover:border-syncra-lime/50 hover:bg-syncra-lime/5 transition-colors"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <category.icon size={24} className="text-syncra-lime shrink-0" />
-            <h3 className="font-mono text-base text-white uppercase tracking-wider">
-              {category.name}
-            </h3>
-          </div>
-          <p className="font-mono text-sm text-syncra-lime/70 leading-relaxed mb-4">
-            {category.description}
-          </p>
-          <p className="font-display text-2xl text-syncra-lime">
-            £{category.price}
-            {category.perPerson && (
-              <span className="font-mono text-xs text-white/60 ml-2">
-                (£{category.perPerson.toFixed(2)} each)
-              </span>
+      {categories.map((category) => {
+        const unit = pounds(category.price.unitAmount);
+        const perPerson = category.isPair ? unit / 2 : null;
+        return (
+          <button
+            key={category.price.id}
+            onClick={() => onSelect(category)}
+            className="w-full text-left p-5 border border-syncra-lime/20 rounded-xl hover:border-syncra-lime/50 hover:bg-syncra-lime/5 transition-colors"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <category.icon size={24} className="text-syncra-lime shrink-0" />
+              <h3 className="font-mono text-base text-white uppercase tracking-wider">
+                {category.name}
+              </h3>
+            </div>
+            {category.description && (
+              <p className="font-mono text-sm text-syncra-lime/70 leading-relaxed mb-4">
+                {category.description}
+              </p>
             )}
-          </p>
-        </button>
-      ))}
+            <p className="font-display text-2xl text-syncra-lime">
+              £{formatPounds(unit)}
+              {perPerson != null && (
+                <span className="font-mono text-xs text-white/60 ml-2">
+                  (£{formatPounds(perPerson)} each)
+                </span>
+              )}
+            </p>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -407,6 +517,7 @@ interface CheckoutScreenProps {
   setCampervan: (v: boolean) => void;
   vehicleReg: string;
   setVehicleReg: (v: string) => void;
+  campervanPrice: ApiPrice | null;
   showExtras: boolean;
 }
 
@@ -419,6 +530,7 @@ function CheckoutScreen({
   setCampervan,
   vehicleReg,
   setVehicleReg,
+  campervanPrice,
   showExtras,
 }: CheckoutScreenProps) {
   const update = (field: keyof AthleteDetails, value: string) => {
@@ -518,7 +630,7 @@ function CheckoutScreen({
         </div>
       </div>
 
-      {showExtras && (
+      {showExtras && campervanPrice && (
         <div>
           <h3 className="font-display text-sm text-syncra-lime uppercase tracking-widest mb-4">
             Extras
@@ -533,7 +645,9 @@ function CheckoutScreen({
             <span className="flex-1 font-mono text-sm text-white">
               Add Campervan Pass
             </span>
-            <span className="font-mono text-sm text-syncra-lime">+£15</span>
+            <span className="font-mono text-sm text-syncra-lime">
+              +£{formatPounds(pounds(campervanPrice.unitAmount))}
+            </span>
           </label>
           {campervan && (
             <div className="mt-3">
