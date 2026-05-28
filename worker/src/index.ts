@@ -4,6 +4,7 @@ import type { Env } from './types';
 import { cors } from './middleware/cors';
 import events from './routes/events';
 import register from './routes/register';
+import spectator from './routes/spectator';
 import webhook from './routes/webhook';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -18,6 +19,7 @@ app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOStri
 // Mount routes
 app.route('/api/events', events);
 app.route('/api/register', register);
+app.route('/api/spectator-checkout', spectator);
 app.route('/api/webhook', webhook);
 
 // 404 handler

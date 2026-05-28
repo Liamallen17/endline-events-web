@@ -7,31 +7,36 @@ export function createStripeClient(secretKey: string): Stripe {
   });
 }
 
+// One checkout session, possibly multiple line items (the primary ticket + any
+// add-ons like campervan). Exactly one of teamId or passId must be set —
+// the webhook reads metadata.team_id or metadata.pass_id to know which
+// record to update on payment events.
 export async function createCheckoutSession(
   stripe: Stripe,
   options: {
-    priceId: string;
+    lineItems: Array<{ priceId: string; quantity: number }>;
     eventId: string;
-    teamId: string;
+    teamId?: string;
+    passId?: string;
     siteUrl: string;
   }
 ): Promise<Stripe.Checkout.Session> {
+  const metadata: Record<string, string> = {
+    event_id: options.eventId,
+  };
+  if (options.teamId) metadata.team_id = options.teamId;
+  if (options.passId) metadata.pass_id = options.passId;
+
+  const recordRef = options.teamId ?? options.passId;
+  const successPath = options.teamId ? `success?team=${recordRef}` : `success?pass=${recordRef}`;
+
   return stripe.checkout.sessions.create({
-    line_items: [
-      {
-        price: options.priceId,
-        quantity: 1,
-      },
-    ],
+    line_items: options.lineItems.map((li) => ({ price: li.priceId, quantity: li.quantity })),
     mode: 'payment',
-    success_url: `${options.siteUrl}/success?team=${options.teamId}`,
+    success_url: `${options.siteUrl}/${successPath}`,
     cancel_url: `${options.siteUrl}/event/${options.eventId}`,
     allow_promotion_codes: true,
-    metadata: {
-      team_id: options.teamId,
-      event_id: options.eventId,
-      price_id: options.priceId,
-    },
+    metadata,
   });
 }
 

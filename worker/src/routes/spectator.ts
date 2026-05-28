@@ -1,32 +1,25 @@
 import { Hono } from 'hono';
-import type { Env, RegisterTeamRequest } from '../types';
+import type { Env, SpectatorCheckoutRequest } from '../types';
 import { Database } from '../lib/db';
 import { createStripeClient, createCheckoutSession } from '../lib/stripe';
 import { priceCategoryKind } from '../lib/prices';
-import {
-  ValidationError,
-  validateAthlete,
-  validateTeamSize,
-  validateUniqueEmails,
-  validateAddOns,
-  ensureCaptain,
-} from '../lib/validation';
+import { ValidationError, validateSpectatorPass, validateAddOns } from '../lib/validation';
 
-const register = new Hono<{ Bindings: Env }>();
+const spectator = new Hono<{ Bindings: Env }>();
 
-// POST /api/register - Create team and start checkout
-register.post('/', async (c) => {
+// POST /api/spectator-checkout - Create spectator pass and start checkout
+spectator.post('/', async (c) => {
   const db = new Database(c.env.DB);
   const stripe = createStripeClient(c.env.STRIPE_SECRET_KEY);
 
-  let body: RegisterTeamRequest;
+  let body: SpectatorCheckoutRequest;
   try {
-    body = await c.req.json<RegisterTeamRequest>();
+    body = await c.req.json<SpectatorCheckoutRequest>();
   } catch {
     return c.json({ error: 'Invalid JSON body' }, 400);
   }
 
-  const { priceId, teamName, athletes: rawAthletes, addOns: rawAddOns, vehicleReg: rawVehicleReg } = body;
+  const { priceId, spectator: rawSpectator, addOns: rawAddOns, vehicleReg: rawVehicleReg } = body;
 
   if (!priceId || typeof priceId !== 'string') {
     return c.json({ error: 'priceId is required', code: 'MISSING_PRICE' }, 400);
@@ -40,11 +33,9 @@ register.post('/', async (c) => {
     if (!price.active) {
       return c.json({ error: 'Price is no longer available', code: 'PRICE_INACTIVE' }, 400);
     }
-    // The athlete registration endpoint should only be used for athlete-kind
-    // prices. Spectator passes go through /api/spectator-checkout instead.
-    if (priceCategoryKind(price) !== 'athlete') {
+    if (priceCategoryKind(price) !== 'spectator') {
       return c.json(
-        { error: 'This price is not an athlete category', code: 'PRICE_WRONG_KIND' },
+        { error: 'This price is not a spectator pass', code: 'PRICE_WRONG_KIND' },
         400
       );
     }
@@ -66,23 +57,13 @@ register.post('/', async (c) => {
     }
     if (!(await db.isRegistrationOpen(event))) {
       return c.json(
-        { error: 'Registration is not open for this event', code: 'REGISTRATION_CLOSED' },
+        { error: 'Spectator passes are not currently on sale', code: 'REGISTRATION_CLOSED' },
         400
       );
     }
 
-    if (!Array.isArray(rawAthletes) || rawAthletes.length === 0) {
-      return c.json({ error: 'At least one athlete is required', code: 'NO_ATHLETES' }, 400);
-    }
+    const spectatorInput = validateSpectatorPass(rawSpectator);
 
-    const athletes = rawAthletes.map(validateAthlete);
-    validateTeamSize(athletes, price);
-    validateUniqueEmails(athletes);
-    const athletesWithCaptain = ensureCaptain(athletes);
-
-    // Resolve add-ons (e.g. campervan). Each addon priceId must exist,
-    // be active, be category_kind=addon, and live under a product linked
-    // to the same event so users can't bolt unrelated products onto checkout.
     const addOns = validateAddOns(rawAddOns);
     const resolvedAddOns: Array<{ priceId: string; quantity: number }> = [];
     for (const addon of addOns) {
@@ -111,15 +92,13 @@ register.post('/', async (c) => {
 
     const vehicleReg = typeof rawVehicleReg === 'string' ? rawVehicleReg.trim() || undefined : undefined;
 
-    // Create team and members atomically
-    const teamId = crypto.randomUUID();
-    await db.createTeamWithMembers({
-      teamId,
+    const passId = crypto.randomUUID();
+    await db.createSpectatorPass({
+      passId,
       eventId: event.id,
       priceId: price.id,
-      teamName,
+      spectator: spectatorInput,
       vehicleReg,
-      athletes: athletesWithCaptain,
     });
 
     const session = await createCheckoutSession(stripe, {
@@ -128,16 +107,13 @@ register.post('/', async (c) => {
         ...resolvedAddOns,
       ],
       eventId: event.id,
-      teamId,
+      passId,
       siteUrl: c.env.SITE_URL,
     });
 
-    await db.updateTeamStripeSession(teamId, session.id);
+    await db.updateSpectatorPassStripeSession(passId, session.id);
 
-    return c.json({
-      url: session.url,
-      teamId,
-    });
+    return c.json({ url: session.url, passId });
   } catch (err) {
     if (err instanceof ValidationError) {
       return c.json({ error: err.message, code: err.code }, 400);
@@ -146,33 +122,31 @@ register.post('/', async (c) => {
   }
 });
 
-// GET /api/register/:teamId - Get team registration status
-register.get('/:teamId', async (c) => {
+// GET /api/spectator-checkout/:passId - Look up a spectator pass status
+spectator.get('/:passId', async (c) => {
   const db = new Database(c.env.DB);
-  const team = await db.getTeam(c.req.param('teamId'));
+  const pass = await db.getSpectatorPass(c.req.param('passId'));
 
-  if (!team) {
-    return c.json({ error: 'Team not found' }, 404);
+  if (!pass) {
+    return c.json({ error: 'Spectator pass not found' }, 404);
   }
 
-  const event = await db.getEvent(team.event_id);
-  const members = await db.getTeamMembers(team.id);
-  const price = team.stripe_price_id ? await db.getStripePrice(team.stripe_price_id) : null;
+  const event = await db.getEvent(pass.event_id);
+  const price = pass.stripe_price_id ? await db.getStripePrice(pass.stripe_price_id) : null;
 
   return c.json({
-    team: {
-      id: team.id,
-      name: team.name,
-      paymentStatus: team.payment_status,
-      paidAt: team.paid_at,
-      vehicleReg: team.vehicle_reg,
+    pass: {
+      id: pass.id,
+      paymentStatus: pass.payment_status,
+      paidAt: pass.paid_at,
+      firstName: pass.first_name,
+      lastName: pass.last_name,
+      email: pass.email,
+      phone: pass.phone,
+      vehicleReg: pass.vehicle_reg,
     },
     event: event
-      ? {
-          id: event.id,
-          name: event.name,
-          eventDate: event.event_date,
-        }
+      ? { id: event.id, name: event.name, eventDate: event.event_date }
       : null,
     price: price
       ? {
@@ -182,14 +156,7 @@ register.get('/:teamId', async (c) => {
           currency: price.currency,
         }
       : null,
-    members: members.map((m) => ({
-      name: m.name,
-      email: m.athlete_email,
-      gender: m.gender,
-      runClub: m.run_club,
-      role: m.role,
-    })),
   });
 });
 
-export default register;
+export default spectator;

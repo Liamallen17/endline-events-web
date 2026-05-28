@@ -78,29 +78,35 @@ npm run deploy
 
 #### `GET /api/events`
 
-List all published events.
+List all published events with their prices grouped by category kind.
 
 ```json
 {
   "events": [
     {
-      "id": "autumn-team-relay-2025",
-      "name": "Autumn Team Relay",
-      "description": "Team relay race for groups of 4-6",
-      "eventDate": "2025-09-15",
-      "minTeamSize": 4,
-      "maxTeamSize": 6,
+      "id": "bbu-26-1",
+      "name": "BBU 26.1",
+      "eventDate": "2026-05-02",
       "registrationOpen": true,
-      "registrationOpensAt": "2025-06-01T00:00:00Z",
-      "registrationClosesAt": "2025-09-10T23:59:59Z"
+      "athletePrices": [
+        { "id": "price_xxx", "nickname": "Full Pair", "unitAmount": 8000, "currency": "gbp", "minTeamSize": 2, "maxTeamSize": 2, "addonType": null }
+      ],
+      "addOnPrices": [
+        { "id": "price_yyy", "nickname": "Campervan", "unitAmount": 2500, "currency": "gbp", "minTeamSize": null, "maxTeamSize": null, "addonType": "campervan" }
+      ],
+      "spectatorPrices": [
+        { "id": "price_zzz", "nickname": "Spectator Pass", "unitAmount": 1000, "currency": "gbp", "minTeamSize": null, "maxTeamSize": null, "addonType": null }
+      ]
     }
   ]
 }
 ```
 
+The grouping is driven by Stripe price metadata — see "Stripe Setup" below.
+
 #### `GET /api/events/:id`
 
-Get single event details.
+Get single event details (same shape as above, single object).
 
 #### `GET /api/events/:id/roster`
 
@@ -110,50 +116,88 @@ Get all paid teams and their members for an event.
 
 #### `POST /api/register`
 
-Create a team and start Stripe checkout.
+Create an athlete team and start Stripe checkout.
 
 **Request:**
 ```json
 {
-  "eventId": "autumn-team-relay-2025",
+  "priceId": "price_xxx",
   "teamName": "The Speedsters",
   "athletes": [
     {
       "email": "captain@example.com",
-      "name": "Alice Runner",
+      "firstName": "Alice",
+      "lastName": "Runner",
+      "phone": "07700900000",
+      "dateOfBirth": "1990-01-15",
       "gender": "female",
       "runClub": "City Striders",
       "isCaptain": true
-    },
-    {
-      "email": "member1@example.com",
-      "name": "Bob Sprinter",
-      "gender": "male"
     }
-  ]
+  ],
+  "addOns": [
+    { "priceId": "price_yyy", "quantity": 1 }
+  ],
+  "vehicleReg": "AB12 CDE"
 }
 ```
 
+`name` (combined) is accepted as an alternative to `firstName`/`lastName`. `sex`/`dob`/`runningClub` are accepted as aliases for `gender`/`dateOfBirth`/`runClub` (matching the frontend modal's field names). Add-ons must be `category_kind=addon` prices belonging to the same event.
+
 **Response:**
 ```json
-{
-  "url": "https://checkout.stripe.com/...",
-  "teamId": "abc123..."
-}
+{ "url": "https://checkout.stripe.com/...", "teamId": "abc123..." }
 ```
 
 #### `GET /api/register/:teamId`
 
-Get team registration status and members.
+Get team registration status, members, and which price (category) was paid for.
+
+### Spectator passes
+
+#### `POST /api/spectator-checkout`
+
+Create a spectator pass and start Stripe checkout. Used for non-racing attendees (e.g. supporter wristbands).
+
+**Request:**
+```json
+{
+  "priceId": "price_zzz",
+  "spectator": {
+    "firstName": "Sam",
+    "lastName": "Supporter",
+    "email": "sam@example.com",
+    "phone": "07700900000"
+  },
+  "addOns": [
+    { "priceId": "price_yyy", "quantity": 1 }
+  ],
+  "vehicleReg": "AB12 CDE"
+}
+```
+
+The chosen `priceId` must be `category_kind=spectator`.
+
+**Response:**
+```json
+{ "url": "https://checkout.stripe.com/...", "passId": "def456..." }
+```
+
+#### `GET /api/spectator-checkout/:passId`
+
+Get spectator pass status and contact details.
 
 ### Webhooks
 
 #### `POST /api/webhook/stripe`
 
 Stripe webhook endpoint. Configure in Stripe Dashboard with events:
-- `checkout.session.completed`
-- `checkout.session.expired`
-- `charge.refunded` (optional)
+- `product.created`, `product.updated`, `product.deleted`
+- `price.created`, `price.updated`, `price.deleted`
+- `checkout.session.completed`, `checkout.session.expired`
+- `charge.refunded`
+
+The handler routes `team_id` vs `pass_id` in checkout session metadata to the appropriate D1 record.
 
 ## Database Schema
 
@@ -180,11 +224,23 @@ npm run typecheck
 
 ## Stripe Setup
 
-Stripe is the source of truth for products and prices. The link to an event is carried in `product.metadata`.
+Stripe is the source of truth for products and prices. The link to an event is carried in `product.metadata`; each price is classified by metadata on the price itself.
 
-1. Create the event row in the database (slug, dates, registration window) — Stripe products attach to it by slug.
-2. In Stripe Dashboard, create one product per event and set `metadata.event_id = "<event-slug>"`.
-3. Under that product, create one price per category. Use the `nickname` field for the human label ("Full Pair", "Half Solo"). Set `metadata.min_team_size` and `metadata.max_team_size` on each price for the team-size constraints.
+### Product metadata
+- `event_id` — required, matches the event slug in D1 (e.g. `bbu-26-1`).
+
+### Price metadata
+- `category_kind` — `"athlete"` (default if absent) | `"addon"` | `"spectator"`. Drives how the API groups the price and which endpoint accepts it for checkout.
+- `min_team_size`, `max_team_size` — required for athlete prices; ignored otherwise.
+- `addon_type` — optional free-form label for add-on prices (e.g. `"campervan"`), surfaced to the frontend so it can render specific UI like a vehicle-reg input.
+
+### Steps
+1. Create the event row in D1 (slug, dates, registration window) — Stripe products attach to it by slug.
+2. In Stripe Dashboard, create one product per event and set `metadata.event_id`.
+3. Under that product, create one price per category:
+   - **Athlete categories** (BBU's "Full Pair", "Half Solo" etc.) — set `category_kind=athlete`, `min_team_size`, `max_team_size`, and use the `nickname` field for the human label.
+   - **Add-ons** (campervan) — set `category_kind=addon`, optional `addon_type`. No team size needed.
+   - **Spectator passes** — set `category_kind=spectator`. No team size needed.
 4. Configure the webhook endpoint pointing to `/api/webhook/stripe` with events: `product.created/updated/deleted`, `price.created/updated/deleted`, `checkout.session.completed/expired`, `charge.refunded`.
 5. Add the webhook signing secret as `STRIPE_WEBHOOK_SECRET`.
 6. Run the initial sync to backfill products and prices into D1:

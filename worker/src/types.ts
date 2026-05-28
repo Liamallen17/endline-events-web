@@ -146,11 +146,25 @@ export interface RegisterTeamRequest {
   priceId: string;
   teamName?: string;
   athletes: AthleteInput[];
+  addOns?: Array<{ priceId: string; quantity?: number }>;
+  vehicleReg?: string;
 }
 
 export interface RegisterTeamResponse {
   url: string;
   teamId: string;
+}
+
+export interface SpectatorCheckoutRequest {
+  priceId: string;
+  spectator: SpectatorPassInput;
+  addOns?: Array<{ priceId: string; quantity?: number }>;
+  vehicleReg?: string;
+}
+
+export interface SpectatorCheckoutResponse {
+  url: string;
+  passId: string;
 }
 
 export interface EventPriceView {
@@ -161,6 +175,7 @@ export interface EventPriceView {
   currency: string;
   minTeamSize: number | null;
   maxTeamSize: number | null;
+  addonType: string | null;
 }
 
 export interface ApiError {

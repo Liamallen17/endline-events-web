@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import type { Env, EventPriceView, EventRow, StripePriceRow } from '../types';
 import { Database } from '../lib/db';
+import { priceCategoryKind, priceAddonType } from '../lib/prices';
 
 const events = new Hono<{ Bindings: Env }>();
 
@@ -13,11 +14,30 @@ function toPriceView(p: StripePriceRow): EventPriceView {
     currency: p.currency,
     minTeamSize: p.min_team_size,
     maxTeamSize: p.max_team_size,
+    addonType: priceAddonType(p),
   };
 }
 
 async function eventView(db: Database, event: EventRow) {
   const prices = await db.getEventPrices(event.id);
+  // Group by category_kind metadata so the frontend stops hardcoding which
+  // products are race categories vs add-ons vs spectator passes.
+  const athletePrices: EventPriceView[] = [];
+  const addOnPrices: EventPriceView[] = [];
+  const spectatorPrices: EventPriceView[] = [];
+  for (const p of prices) {
+    const view = toPriceView(p);
+    switch (priceCategoryKind(p)) {
+      case 'addon':
+        addOnPrices.push(view);
+        break;
+      case 'spectator':
+        spectatorPrices.push(view);
+        break;
+      default:
+        athletePrices.push(view);
+    }
+  }
   return {
     id: event.id,
     name: event.name,
@@ -26,7 +46,9 @@ async function eventView(db: Database, event: EventRow) {
     registrationOpen: await db.isRegistrationOpen(event),
     registrationOpensAt: event.registration_opens_at,
     registrationClosesAt: event.registration_closes_at,
-    prices: prices.map(toPriceView),
+    athletePrices,
+    addOnPrices,
+    spectatorPrices,
   };
 }
 
@@ -61,7 +83,6 @@ events.get('/:id/roster', async (c) => {
 
   const roster = await db.getEventRoster(event.id);
 
-  // Group by team
   const teams = new Map<string, {
     id: string;
     name: string | null;
