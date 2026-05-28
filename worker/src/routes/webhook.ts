@@ -52,10 +52,14 @@ webhook.post('/stripe', async (c) => {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const teamId = session.metadata?.team_id;
+        const passId = session.metadata?.pass_id;
         if (teamId) {
           await db.markTeamPaid(teamId);
           console.log(`Team ${teamId} marked as paid`);
           // TODO: send confirmation email (Resend/Postmark/SendGrid)
+        } else if (passId) {
+          await db.markSpectatorPassPaid(passId);
+          console.log(`Spectator pass ${passId} marked as paid`);
         }
         break;
       }
@@ -63,16 +67,20 @@ webhook.post('/stripe', async (c) => {
       case 'checkout.session.expired': {
         const session = event.data.object as Stripe.Checkout.Session;
         const teamId = session.metadata?.team_id;
+        const passId = session.metadata?.pass_id;
         if (teamId) {
           await db.markTeamFailed(teamId);
           console.log(`Team ${teamId} marked as failed (session expired)`);
+        } else if (passId) {
+          await db.markSpectatorPassFailed(passId);
+          console.log(`Spectator pass ${passId} marked as failed (session expired)`);
         }
         break;
       }
 
       case 'charge.refunded': {
-        // The charge object doesn't carry team_id directly; resolve via the
-        // checkout session that created the underlying payment intent.
+        // The charge object doesn't carry team_id/pass_id directly; resolve
+        // via the checkout session that created the underlying payment intent.
         const charge = event.data.object as Stripe.Charge;
         const paymentIntent = typeof charge.payment_intent === 'string'
           ? charge.payment_intent
@@ -86,9 +94,13 @@ webhook.post('/stripe', async (c) => {
           limit: 1,
         });
         const teamId = sessions.data[0]?.metadata?.team_id;
+        const passId = sessions.data[0]?.metadata?.pass_id;
         if (teamId) {
           await db.markTeamRefunded(teamId);
           console.log(`Team ${teamId} marked as refunded`);
+        } else if (passId) {
+          await db.markSpectatorPassRefunded(passId);
+          console.log(`Spectator pass ${passId} marked as refunded`);
         }
         break;
       }
