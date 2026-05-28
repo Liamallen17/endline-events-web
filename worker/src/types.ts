@@ -9,6 +9,10 @@ export interface Env {
 export interface AthleteRow {
   email: string;
   name: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  date_of_birth: string | null;
   gender: 'male' | 'female' | 'other' | 'unspecified' | null;
   run_club: string | null;
   created_at: string;
@@ -35,6 +39,7 @@ export interface TeamRow {
   stripe_price_id: string | null;
   name: string | null;
   stripe_session_id: string | null;
+  vehicle_reg: string | null;
   payment_status: 'pending' | 'paid' | 'refunded' | 'failed';
   paid_at: string | null;
   created_at: string;
@@ -98,12 +103,43 @@ export interface StripePriceInput {
 }
 
 // API request/response types
+//
+// AthleteInput accepts either the legacy combined `name` field or split
+// `firstName`/`lastName`. The API layer reconciles: when first/last are
+// supplied, `name` is derived as their concatenation so the NOT NULL
+// `athletes.name` column stays satisfied for back-compat with old rows.
 export interface AthleteInput {
   email: string;
-  name: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  dateOfBirth?: string;
   gender?: 'male' | 'female' | 'other' | 'unspecified';
   runClub?: string;
   isCaptain?: boolean;
+}
+
+export interface SpectatorPassRow {
+  id: string;
+  event_id: string;
+  stripe_session_id: string | null;
+  stripe_price_id: string | null;
+  payment_status: 'pending' | 'paid' | 'refunded' | 'failed';
+  paid_at: string | null;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  vehicle_reg: string | null;
+  created_at: string;
+}
+
+export interface SpectatorPassInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
 }
 
 export interface RegisterTeamRequest {
