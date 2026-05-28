@@ -183,51 +183,76 @@ export default function RaceFinderModal({ isOpen, onClose, initialCategory, even
 
     if (!selectedCategory) return;
 
-    const isAthlete = !selectedCategory.isSpectator;
-    const isPairs = selectedCategory.isPair;
+    const priceId = PRICE_IDS[selectedCategory.name];
+    if (!priceId) {
+      setCheckoutError('Price not configured for this category.');
+      return;
+    }
 
-    const payload = {
-      lineItems: [
-        { price: PRICE_IDS[selectedCategory.name], quantity: 1 },
-        ...(campervan ? [{ price: PRICE_IDS['Campervan'], quantity: 1 }] : []),
-      ],
-      metadata: {
-        category: selectedCategory.name,
-        campervan,
-        firstName: athlete1.firstName,
-        lastName: athlete1.lastName,
-        email: athlete1.email,
-        phone: athlete1.phone,
-        ...(isAthlete ? { sex: athlete1.sex, dob: athlete1.dateOfBirth, runningClub: athlete1.runningClub } : {}),
-        ...(isPairs ? {
-          partner_firstName: athlete2.firstName,
-          partner_lastName: athlete2.lastName,
-          partner_email: athlete2.email,
-          partner_sex: athlete2.sex,
-          partner_dob: athlete2.dateOfBirth,
-          partner_runningClub: athlete2.runningClub,
-        } : {}),
-        ...(campervan ? { vehicleReg } : {}),
-      },
-    };
+    const campervanPriceId = PRICE_IDS['Campervan'];
+    const addOns = campervan && campervanPriceId
+      ? [{ priceId: campervanPriceId, quantity: 1 }]
+      : undefined;
+    const vehicle = campervan ? vehicleReg.trim() || undefined : undefined;
+
+    let endpoint: string;
+    let payload: unknown;
+
+    if (selectedCategory.isSpectator) {
+      endpoint = '/api/spectator-checkout';
+      payload = {
+        priceId,
+        spectator: {
+          firstName: athlete1.firstName.trim(),
+          lastName: athlete1.lastName.trim(),
+          email: athlete1.email.trim(),
+          phone: athlete1.phone.trim() || undefined,
+        },
+        addOns,
+        vehicleReg: vehicle,
+      };
+    } else {
+      endpoint = '/api/register';
+      const toAthlete = (a: AthleteDetails, isCaptain: boolean) => ({
+        email: a.email.trim(),
+        firstName: a.firstName.trim(),
+        lastName: a.lastName.trim(),
+        phone: a.phone.trim() || undefined,
+        dateOfBirth: a.dateOfBirth || undefined,
+        sex: a.sex || undefined,
+        runningClub: a.runningClub.trim() || undefined,
+        isCaptain,
+      });
+      payload = {
+        priceId,
+        athletes: selectedCategory.isPair
+          ? [toAthlete(athlete1, true), toAthlete(athlete2, false)]
+          : [toAthlete(athlete1, true)],
+        addOns,
+        vehicleReg: vehicle,
+      };
+    }
 
     setIsLoading(true);
     setCheckoutError(null);
 
     try {
-      // TODO: replace ENGINEER_ENDPOINT_URL with the Cloudflare Worker endpoint
-      const response = await fetch('ENGINEER_ENDPOINT_URL/create-checkout-session', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Non-2xx response');
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error ?? 'Something went wrong — please try again.');
+      }
 
-      const { url } = await response.json();
+      const { url } = (await response.json()) as { url: string };
       window.location.href = url;
-    } catch {
-      setCheckoutError('Something went wrong — please try again.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong — please try again.';
+      setCheckoutError(message);
       setIsLoading(false);
     }
   };
