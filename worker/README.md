@@ -208,6 +208,25 @@ See `migrations/0001_initial.sql` for the full schema. Key tables:
 - **teams**: Registration groups linked to events and Stripe sessions
 - **team_members**: Junction table linking athletes to teams
 
+## Reading the current state of an event
+
+CLI summary of an event from D1 — useful for "how many registrations does BBU 26.2 have right now, and what categories are they in" without opening D1 Studio.
+
+```bash
+npm run read-event:local  -- --slug=bbu-26-2
+npm run read-event:remote -- --slug=bbu-26-2
+```
+
+Prints:
+- Event row details (date, registration window, published flag)
+- Linked Stripe products and prices grouped by category kind
+- Team counts by payment status, and broken down by category
+- Spectator pass counts by payment status
+- Unique paid athlete count
+- The 10 most recent team registrations
+
+Read-only — only runs SELECT queries.
+
 ## Development
 
 ### View local database
