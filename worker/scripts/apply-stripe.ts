@@ -71,8 +71,21 @@ if (!stripeKey) {
   process.exit(1);
 }
 
-const stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' });
 const mode = stripeKey.startsWith('sk_live_') ? 'live' : stripeKey.startsWith('sk_test_') ? 'test' : 'unknown';
+
+// Pushing to live should be a deliberate act, not an accident. Require an
+// explicit --allow-live flag so a stale env var pointing at sk_live can't
+// silently provision real production products.
+if (mode === 'live' && !cliArgs.includes('--allow-live')) {
+  console.error(
+    'STRIPE_SECRET_KEY is a live key but --allow-live was not passed.\n' +
+      'Re-run with --allow-live to create products in live Stripe, or unset\n' +
+      'STRIPE_SECRET_KEY if you meant to target test.'
+  );
+  process.exit(1);
+}
+
+const stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' });
 
 const resolvedFile = resolve(file);
 if (!existsSync(resolvedFile)) {

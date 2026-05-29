@@ -121,8 +121,10 @@ npm run read-event:remote -- --slug=bbu-26-2
 Pull every product and price from Stripe into D1 via the Stripe API. Use after creating products in Stripe (instead of waiting for individual webhooks), or to backfill anything the webhook missed. Re-runnable, idempotent via `ON CONFLICT DO UPDATE`.
 
 ```bash
-npm run sync:stripe:remote
+STRIPE_SECRET_KEY=sk_live_xxx npm run sync:stripe:remote
 ```
+
+**Mode guard:** `:remote` refuses to run with a non-live key (`sk_test_…` or anything else), `:local` refuses to run with a live key. Bypass with `--force` if you genuinely intend to mix — almost never the right move, because the mirrored IDs would belong to the wrong Stripe environment and every subsequent webhook would FK-fail.
 
 #### `stripe:export`
 
@@ -144,7 +146,7 @@ npm run stripe:apply -- --file=scripts/stripe-definitions/bbu-26-2.ts
 STRIPE_SECRET_KEY=sk_live_xxx npm run stripe:apply -- --file=scripts/stripe-definitions/bbu-26-2.ts
 ```
 
-Refuses to run if any product in the definition already exists in Stripe (matched by name + `metadata.event_id`). Flags: `--dry-run` (preview without touching Stripe), `--skip-existing` (incremental apply — create only the missing products). After applying, run `sync:stripe:*` to mirror into D1.
+Refuses to run if any product in the definition already exists in Stripe (matched by name + `metadata.event_id`). Flags: `--dry-run` (preview without touching Stripe), `--skip-existing` (incremental apply — create only the missing products), `--allow-live` (required when `STRIPE_SECRET_KEY` is a live key, so a stale env var can't silently provision real products). After applying, run `sync:stripe:*` to mirror into D1.
 
 ### Historical data
 

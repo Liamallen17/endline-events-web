@@ -50,6 +50,37 @@ if (!stripeKey) {
   process.exit(1);
 }
 
+// Refuse to mix Stripe modes with D1 environments. Syncing test-mode Stripe
+// into production D1 (or live-mode Stripe into the local emulator) is almost
+// always an accident — it pollutes the target with the wrong-environment IDs
+// and breaks every webhook event that follows. Bypass with --force if you
+// genuinely intend to do it.
+const isLiveKey = stripeKey.startsWith('sk_live_');
+const isTestKey = stripeKey.startsWith('sk_test_');
+const force = args.includes('--force');
+
+if (isRemote && !isLiveKey && !force) {
+  console.error(
+    'Refusing to sync into remote (production) D1 with a non-live Stripe key.\n' +
+      `Current STRIPE_SECRET_KEY starts with "${stripeKey.slice(0, 8)}…".\n` +
+      'Set STRIPE_SECRET_KEY to a live key (sk_live_…) before running sync:stripe:remote,\n' +
+      'or pass --force if you really mean to do this.'
+  );
+  process.exit(1);
+}
+
+if (isLocal && isLiveKey && !force) {
+  console.error(
+    'Refusing to sync live Stripe data into the local D1 emulator without --force.\n' +
+      'This would pollute your local copy with real production IDs.'
+  );
+  process.exit(1);
+}
+
+if (!isLiveKey && !isTestKey) {
+  console.warn(`Warning: STRIPE_SECRET_KEY does not look like a Stripe key ("${stripeKey.slice(0, 8)}…"). Proceeding anyway.`);
+}
+
 const stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' });
 
 // Single quotes doubled per SQLite spec. Stripe data is trusted (the user's own
