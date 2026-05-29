@@ -6,24 +6,36 @@ Cloudflare Workers API for managing racing event registrations with Stripe payme
 
 ```
 ├── src/
-│   ├── index.ts          # Main entry point, route mounting
-│   ├── types.ts          # TypeScript types for env, DB rows, API
+│   ├── index.ts             # Hono app, route mounting
+│   ├── types.ts             # Shared TypeScript types (Env, row shapes, request/response)
 │   ├── lib/
-│   │   ├── db.ts         # Database wrapper with typed queries
-│   │   ├── stripe.ts     # Stripe client and helpers
-│   │   └── validation.ts # Input validation
+│   │   ├── db.ts            # D1 wrapper with typed queries
+│   │   ├── stripe.ts        # Stripe client + createCheckoutSession
+│   │   ├── prices.ts        # Stripe price metadata helpers (category_kind, addon_type)
+│   │   └── validation.ts    # Input validation
 │   ├── middleware/
-│   │   └── cors.ts       # CORS handling
+│   │   ├── cors.ts          # CORS for local dev across :5173 / :8787
+│   │   └── admin.ts         # Bearer-token gate for ADMIN_TOKEN
 │   └── routes/
-│       ├── events.ts     # GET /api/events, /api/events/:id
-│       ├── register.ts   # POST /api/register
-│       └── webhook.ts    # POST /api/webhook/stripe
-└── migrations/
-    ├── 0001_initial.sql            # Initial schema (athletes, events, teams, team_members)
-    └── 0003_stripe_products.sql    # Stripe product/price mirror + webhook dedup
+│       ├── events.ts        # GET /api/events, /api/events/:id, /api/events/:id/roster (admin)
+│       ├── register.ts      # POST /api/register, GET /api/register/:teamId
+│       ├── spectator.ts     # POST /api/spectator-checkout, GET /api/spectator-checkout/:passId
+│       └── webhook.ts       # POST /api/webhook/stripe
+├── migrations/
+│   ├── 0001_initial.sql                       # athletes, events, teams, team_members
+│   ├── 0003_stripe_products.sql               # stripe_products / stripe_prices mirror + webhook dedup
+│   └── 0004_athlete_fields_and_spectator_passes.sql  # phone/dob/first-last; spectator_passes
+└── scripts/
+    ├── create-event.ts        # see Scripts section
+    ├── read-event.ts
+    ├── sync-stripe.ts
+    ├── export-stripe.ts
+    ├── apply-stripe.ts
+    ├── import-csv.ts
+    └── stripe-definitions/    # versioned per-event TS modules
 ```
 
-Local dev data is populated by syncing real Stripe test-mode products via `scripts/sync-stripe.ts` rather than a static seed file.
+Local dev data is populated by syncing real Stripe test-mode products via `npm run sync:stripe:local` rather than a static seed file.
 
 ## Setup
 
@@ -71,6 +83,115 @@ The API will be available at `http://localhost:8787`.
 
 ```bash
 npm run deploy
+```
+
+## Scripts
+
+All operator scripts are npm scripts in `worker/package.json`. Most database scripts take `--local` (the wrangler D1 emulator at `worker/.wrangler/state/v3/d1/`) or `--remote` (production D1). Stripe-touching scripts read `STRIPE_SECRET_KEY` from env, falling back to `.dev.vars`.
+
+### Event lifecycle
+
+#### `create-event:local` / `create-event:remote`
+
+Insert a new event row in D1. The slug is the only thing the rest of the system keys off (Stripe products attach to it via `metadata.event_id`, the frontend modal fetches `/api/events/<slug>`).
+
+```bash
+npm run create-event:remote -- \
+  --slug=bbu-26-2 \
+  --name="BBU 26.2" \
+  --date=2026-09-26 \
+  --opens=2026-05-01 \
+  --closes=2026-09-20
+```
+
+Flags: `--slug` (required), `--name` (required), `--date`, `--opens`, `--closes`, `--description`. Bare `YYYY-MM-DD` dates are normalised to UTC midnight (opens) / end-of-day (closes); pass a full ISO timestamp for precise times. Idempotent — re-running with the same slug leaves the existing row untouched.
+
+#### `read-event:local` / `read-event:remote`
+
+CLI summary of an event's current state in D1: row details, linked Stripe products and prices grouped by category kind, team counts by payment status (and broken down by category), spectator pass counts, unique paid athlete count, and the 10 most recent registrations. Read-only — only SELECT queries.
+
+```bash
+npm run read-event:remote -- --slug=bbu-26-2
+```
+
+### Stripe sync & versioning
+
+#### `sync:stripe:local` / `sync:stripe:remote`
+
+Pull every product and price from Stripe into D1 via the Stripe API. Use after creating products in Stripe (instead of waiting for individual webhooks), or to backfill anything the webhook missed. Re-runnable, idempotent via `ON CONFLICT DO UPDATE`.
+
+```bash
+npm run sync:stripe:remote
+```
+
+#### `stripe:export`
+
+Capture the current Stripe products + prices for one event into a versioned TS module under `scripts/stripe-definitions/`. The output is hand-editable — common case is to split a single multi-price product into one product per category so Stripe Checkout shows distinct line item names.
+
+```bash
+npm run stripe:export -- --slug=bbu-26-2 [--out=<path>]
+```
+
+#### `stripe:apply`
+
+Apply a definition module to whichever Stripe account `STRIPE_SECRET_KEY` points at. Used to promote a tested test-mode setup to live, or to rebuild test after archiving.
+
+```bash
+# Test (uses .dev.vars)
+npm run stripe:apply -- --file=scripts/stripe-definitions/bbu-26-2.ts
+
+# Live
+STRIPE_SECRET_KEY=sk_live_xxx npm run stripe:apply -- --file=scripts/stripe-definitions/bbu-26-2.ts
+```
+
+Refuses to run if any product in the definition already exists in Stripe (matched by name + `metadata.event_id`). Flags: `--dry-run` (preview without touching Stripe), `--skip-existing` (incremental apply — create only the missing products). After applying, run `sync:stripe:*` to mirror into D1.
+
+### Historical data
+
+#### `import:csv:local` / `import:csv:remote`
+
+Import a Firebase + Stripe attendees CSV (from the `boughton-ultra` repo's `export-attendees-with-stripe.js`) into D1. Auto-creates the event row if missing, uses Stripe sessionId as the team PK for idempotency, inserts athletes with `OR IGNORE` so historical data never clobbers fresher records, skips rows with no sessionId. Leaves `teams.stripe_price_id` NULL — the CSV doesn't carry per-team category.
+
+```bash
+npm run import:csv:remote -- \
+  --csv=../../boughton-ultra/attendees-with-payments-2026-04-26.csv \
+  --event-slug=bbu-26-1 \
+  --event-name="BBU 26.1" \
+  --event-date=2026-05-02
+```
+
+### Database & development
+
+| Script | What it does |
+|---|---|
+| `db:migrate:local` / `db:migrate:remote` | Apply outstanding D1 migrations |
+| `db:studio` | Open wrangler's D1 Studio against the local DB |
+| `dev` | Run the worker locally via `wrangler dev` (port 8787) |
+| `deploy` | One-off production deploy (CI normally handles this via GitHub Actions) |
+| `typecheck` | `tsc --noEmit` over `src/` |
+| `lint` | `eslint src --ext .ts` |
+
+### Common workflows
+
+**Set up a new event end-to-end:**
+```bash
+npm run create-event:remote -- --slug=<slug> --name=<name> ...
+# (set up products + prices in Stripe Dashboard, or stripe:apply a definition)
+npm run sync:stripe:remote
+npm run read-event:remote -- --slug=<slug>     # verify
+```
+
+**Promote a tested Stripe setup from test to live:**
+```bash
+npm run stripe:export -- --slug=<slug>
+# (commit the generated scripts/stripe-definitions/<slug>.ts)
+STRIPE_SECRET_KEY=sk_live_xxx npm run stripe:apply -- --file=scripts/stripe-definitions/<slug>.ts
+npm run sync:stripe:remote
+```
+
+**Resync prices after a Stripe edit:**
+```bash
+npm run sync:stripe:remote
 ```
 
 ## API Endpoints
@@ -215,88 +336,6 @@ See `migrations/0001_initial.sql` for the full schema. Key tables:
 - **teams**: Registration groups linked to events and Stripe sessions
 - **team_members**: Junction table linking athletes to teams
 
-## Reading the current state of an event
-
-CLI summary of an event from D1 — useful for "how many registrations does BBU 26.2 have right now, and what categories are they in" without opening D1 Studio.
-
-```bash
-npm run read-event:local  -- --slug=bbu-26-2
-npm run read-event:remote -- --slug=bbu-26-2
-```
-
-Prints:
-- Event row details (date, registration window, published flag)
-- Linked Stripe products and prices grouped by category kind
-- Team counts by payment status, and broken down by category
-- Spectator pass counts by payment status
-- Unique paid athlete count
-- The 10 most recent team registrations
-
-Read-only — only runs SELECT queries.
-
-## Development
-
-### View local database
-
-```bash
-npm run db:studio
-```
-
-### Type checking
-
-```bash
-npm run typecheck
-```
-
-## Versioning Stripe setup (export + apply)
-
-Stripe products and prices can be captured into a versioned TS module per event, committed to git, and re-applied to any Stripe account. Useful for promoting a tested test-mode setup to live, or for rebuilding test after archiving everything.
-
-### Export a working event into a definition file
-
-```bash
-npm run stripe:export -- --slug=bbu-26-2
-```
-
-Reads `STRIPE_SECRET_KEY` from env or `.dev.vars`. Lists every product with `metadata.event_id = <slug>`, gathers their active prices, and writes a TS module to `scripts/stripe-definitions/<slug>.ts`. The file is hand-editable — you can rename products, adjust prices, or split a single product into one-per-category before applying.
-
-### Apply a definition to another account
-
-```bash
-# Test (uses .dev.vars STRIPE_SECRET_KEY)
-npm run stripe:apply -- --file=scripts/stripe-definitions/bbu-26-2.ts
-
-# Live (point STRIPE_SECRET_KEY at the live key)
-STRIPE_SECRET_KEY=sk_live_xxx npm run stripe:apply -- --file=scripts/stripe-definitions/bbu-26-2.ts
-```
-
-Refuses to run if any product in the definition already exists in Stripe (matched by name + `metadata.event_id`), so you can't silently double up products by running against the wrong account.
-
-Flags:
-- `--dry-run` — print what would be created, no Stripe calls
-- `--skip-existing` — apply only the products that don't already exist
-
-After applying, run `npm run sync:stripe:remote` (or `:local`) to mirror the new products/prices into D1.
-
-## Creating a new event
-
-Events are rows in D1; the slug is the only thing the rest of the system keys off (Stripe products attach to it via `metadata.event_id`, the frontend modal fetches `/api/events/<slug>`).
-
-```bash
-npm run create-event:remote -- \
-  --slug=bbu-26-2 \
-  --name="BBU 26.2" \
-  --date=2026-09-26 \
-  --opens=2026-05-01 \
-  --closes=2026-09-20
-```
-
-Use `create-event:local` against the local D1 emulator when testing.
-
-The script is idempotent: re-running with the same `--slug` leaves an existing row untouched (no clobbering names or dates). Optional `--description` flag too. Dates default to UTC midnight (opens) and UTC end-of-day (closes) if given as bare `YYYY-MM-DD`, or pass a full ISO timestamp for explicit times.
-
-Once the event row exists, jump to Stripe Setup below to add the products and prices.
-
 ## Stripe Setup
 
 Stripe is the source of truth for products and prices. The link to an event is carried in `product.metadata`; each price is classified by metadata on the price itself.
@@ -318,33 +357,7 @@ Stripe is the source of truth for products and prices. The link to an event is c
    - **Spectator passes** — set `category_kind=spectator`. No team size needed.
 4. Configure the webhook endpoint pointing to `/api/webhook/stripe` with events: `product.created/updated/deleted`, `price.created/updated/deleted`, `checkout.session.completed/expired`, `charge.refunded`.
 5. Add the webhook signing secret as `STRIPE_WEBHOOK_SECRET`.
-6. Run the initial sync to backfill products and prices into D1:
-   ```bash
-   npm run sync:stripe:local    # local D1 emulator
-   npm run sync:stripe:remote   # production D1
-   ```
-   The script lists all products and prices via the Stripe API and upserts them. Re-runnable; idempotent via `ON CONFLICT DO UPDATE`. Ongoing changes after this initial sync flow in through the webhook.
-
-## Importing historical race data
-
-For races that ran on the previous Firebase + Stripe setup, the canonical attendee export from the old `boughton-ultra` repo (`scripts/export-attendees-with-stripe.js` → `attendees-with-payments-YYYY-MM-DD.csv`) can be imported with:
-
-```bash
-npm run import:csv:local -- \
-  --csv=../../boughton-ultra/attendees-with-payments-2026-04-26.csv \
-  --event-slug=bbu-26-1 \
-  --event-name="BBU 26.1" \
-  --event-date=2026-05-02
-```
-
-The script:
-- Auto-creates the event row if it doesn't exist (with `is_published=1` and a sentinel `stripe_price_id='historical'` to satisfy the legacy NOT NULL column).
-- Uses the Stripe `sessionId` from the CSV as the team's primary key, which makes re-runs idempotent without needing a lookup.
-- Inserts athletes with `OR IGNORE` so importing old data never overwrites fresher athlete records from real registrations.
-- Leaves `teams.stripe_price_id` NULL — the CSV doesn't carry which price category was paid for, so the per-team category isn't recovered. Roster lookups still work.
-- Skips rows with no Stripe sessionId (Firebase-only registrations that never paid).
-
-Replace `--local` with `--remote` to import into production D1.
+6. Run `npm run sync:stripe:remote` to backfill products and prices into D1 (see [Scripts](#scripts) — `sync:stripe:*`). Ongoing changes flow through the webhook after this initial sync.
 
 ## Frontend Integration
 
@@ -373,7 +386,8 @@ const handleSubmit = async (formData: FormData) => {
 ## Future Improvements
 
 - [ ] Email confirmations (Resend/Postmark integration)
-- [ ] Admin authentication for roster endpoints
 - [ ] Capacity limits per event
 - [ ] Waiting list functionality
 - [ ] Export to CSV/Excel
+- [ ] Drop the legacy NOT NULL columns on `events` (`stripe_price_id`, `min_team_size`, `max_team_size`) — sentinel values currently satisfy them
+- [ ] Per-event cancel landing page (currently Stripe cancel returns to home)
