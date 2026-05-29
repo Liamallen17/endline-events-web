@@ -56,6 +56,7 @@ npm run db:migrate:remote
 ```bash
 wrangler secret put STRIPE_SECRET_KEY
 wrangler secret put STRIPE_WEBHOOK_SECRET
+wrangler secret put ADMIN_TOKEN          # bearer token for /api/events/:id/roster
 ```
 
 ### 5. Run locally
@@ -108,9 +109,15 @@ The grouping is driven by Stripe price metadata — see "Stripe Setup" below.
 
 Get single event details (same shape as above, single object).
 
-#### `GET /api/events/:id/roster`
+#### `GET /api/events/:id/roster` *(admin)*
 
-Get all paid teams and their members for an event.
+Get all paid teams and their members for an event, including PII (name, email, gender, run club). Requires the `ADMIN_TOKEN` bearer:
+
+```bash
+curl -H "Authorization: Bearer $ADMIN_TOKEN" https://endlineevents.com/api/events/bbu-26-2/roster
+```
+
+Set the token with `wrangler secret put ADMIN_TOKEN` (production) and in `.dev.vars` locally. Unauthenticated requests return 401; requests when no `ADMIN_TOKEN` is configured return 500 (fail closed).
 
 ### Registration
 
