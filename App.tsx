@@ -13,6 +13,7 @@ import { TracksixEvent } from './pages/TracksixEvent';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { CookiePolicy } from './pages/CookiePolicy';
 import { GalleryPage } from './pages/GalleryPage';
+import { SuccessPage } from './pages/SuccessPage';
 import { ScrollToTop } from './components/ScrollToTop';
 
 // Homepage component with all sections
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/events/bbu" element={<BBUEvent />} />
         <Route path="/events/tracksix" element={<TracksixEvent />} />
         <Route path="/gallery" element={<GalleryPage />} />
+        <Route path="/success" element={<SuccessPage />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/cookies" element={<CookiePolicy />} />
       </Routes>

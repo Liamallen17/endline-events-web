@@ -34,7 +34,9 @@ export async function createCheckoutSession(
     line_items: options.lineItems.map((li) => ({ price: li.priceId, quantity: li.quantity })),
     mode: 'payment',
     success_url: `${options.siteUrl}/${successPath}`,
-    cancel_url: `${options.siteUrl}/event/${options.eventId}`,
+    // Frontend doesn't have a per-event slug route — send users to the home
+    // page on cancel rather than a 404. They can pick the event again from there.
+    cancel_url: `${options.siteUrl}/`,
     allow_promotion_codes: true,
     metadata,
   });
