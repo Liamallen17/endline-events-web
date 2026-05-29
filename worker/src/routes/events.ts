@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { Env, EventPriceView, EventRow, StripePriceRow } from '../types';
 import { Database } from '../lib/db';
 import { priceCategoryKind, priceAddonType } from '../lib/prices';
+import { requireAdmin } from '../middleware/admin';
 
 const events = new Hono<{ Bindings: Env }>();
 
@@ -72,8 +73,9 @@ events.get('/:id', async (c) => {
   return c.json(await eventView(db, event));
 });
 
-// GET /api/events/:id/roster - Get event roster (for admin/display)
-events.get('/:id/roster', async (c) => {
+// GET /api/events/:id/roster - Admin-only: full roster including athlete PII
+// (name, email, gender, run_club). Bearer token required via ADMIN_TOKEN.
+events.get('/:id/roster', requireAdmin, async (c) => {
   const db = new Database(c.env.DB);
   const event = await db.getEvent(c.req.param('id'));
 
