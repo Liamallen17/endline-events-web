@@ -11,6 +11,8 @@
     "db:studio": "wrangler d1 studio endline-events --local",
     "sync:stripe:local": "tsx scripts/sync-stripe.ts --local",
     "sync:stripe:remote": "tsx scripts/sync-stripe.ts --remote",
+    "stripe:export": "tsx scripts/export-stripe.ts",
+    "stripe:apply": "tsx scripts/apply-stripe.ts",
     "import:csv:local": "tsx scripts/import-csv.ts --local",
     "import:csv:remote": "tsx scripts/import-csv.ts --remote",
     "read-event:local": "tsx scripts/read-event.ts --local",

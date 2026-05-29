@@ -248,6 +248,36 @@ npm run db:studio
 npm run typecheck
 ```
 
+## Versioning Stripe setup (export + apply)
+
+Stripe products and prices can be captured into a versioned TS module per event, committed to git, and re-applied to any Stripe account. Useful for promoting a tested test-mode setup to live, or for rebuilding test after archiving everything.
+
+### Export a working event into a definition file
+
+```bash
+npm run stripe:export -- --slug=bbu-26-2
+```
+
+Reads `STRIPE_SECRET_KEY` from env or `.dev.vars`. Lists every product with `metadata.event_id = <slug>`, gathers their active prices, and writes a TS module to `scripts/stripe-definitions/<slug>.ts`. The file is hand-editable — you can rename products, adjust prices, or split a single product into one-per-category before applying.
+
+### Apply a definition to another account
+
+```bash
+# Test (uses .dev.vars STRIPE_SECRET_KEY)
+npm run stripe:apply -- --file=scripts/stripe-definitions/bbu-26-2.ts
+
+# Live (point STRIPE_SECRET_KEY at the live key)
+STRIPE_SECRET_KEY=sk_live_xxx npm run stripe:apply -- --file=scripts/stripe-definitions/bbu-26-2.ts
+```
+
+Refuses to run if any product in the definition already exists in Stripe (matched by name + `metadata.event_id`), so you can't silently double up products by running against the wrong account.
+
+Flags:
+- `--dry-run` — print what would be created, no Stripe calls
+- `--skip-existing` — apply only the products that don't already exist
+
+After applying, run `npm run sync:stripe:remote` (or `:local`) to mirror the new products/prices into D1.
+
 ## Creating a new event
 
 Events are rows in D1; the slug is the only thing the rest of the system keys off (Stripe products attach to it via `metadata.event_id`, the frontend modal fetches `/api/events/<slug>`).
