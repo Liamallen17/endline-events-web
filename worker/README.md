@@ -222,6 +222,25 @@ npm run db:studio
 npm run typecheck
 ```
 
+## Creating a new event
+
+Events are rows in D1; the slug is the only thing the rest of the system keys off (Stripe products attach to it via `metadata.event_id`, the frontend modal fetches `/api/events/<slug>`).
+
+```bash
+npm run create-event:remote -- \
+  --slug=bbu-26-2 \
+  --name="BBU 26.2" \
+  --date=2026-09-26 \
+  --opens=2026-05-01 \
+  --closes=2026-09-20
+```
+
+Use `create-event:local` against the local D1 emulator when testing.
+
+The script is idempotent: re-running with the same `--slug` leaves an existing row untouched (no clobbering names or dates). Optional `--description` flag too. Dates default to UTC midnight (opens) and UTC end-of-day (closes) if given as bare `YYYY-MM-DD`, or pass a full ISO timestamp for explicit times.
+
+Once the event row exists, jump to Stripe Setup below to add the products and prices.
+
 ## Stripe Setup
 
 Stripe is the source of truth for products and prices. The link to an event is carried in `product.metadata`; each price is classified by metadata on the price itself.
